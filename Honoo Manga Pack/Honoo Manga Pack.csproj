@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Honoo.MangaPack</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<Product>Honoo Manga Pack</Product>
+	<Version>1.3.0</Version>
+	<Authors>Loki Honoo</Authors>
+	<Company>Loki Honoo</Company>
+	<Copyright>Copyright (C) Loki Honoo 2022. All rights reserved.</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="itext7" Version="7.2.5" />
+    <PackageReference Include="SharpCompress" Version="0.32.2" />
+    <PackageReference Include="ShellProgressBar" Version="5.2.0" />
+  </ItemGroup>
+
+</Project>
