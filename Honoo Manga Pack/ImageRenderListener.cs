@@ -35,16 +35,15 @@ namespace Honoo.MangaPack
                     if (imageObject != null)
                     {
                         _index++;
+                        string safe = _index.ToString() + "." + imageObject.IdentifyImageFileExtension();
                         if (_useMemory)
                         {
-                            string safe = _index.ToString() + "." + imageObject.IdentifyImageFileExtension();
                             MemoryStream temp = new(imageObject.GetImageBytes());
                             temp.Seek(0, SeekOrigin.Begin);
                             _entries.Add(new EntrySettings(safe, null, temp, null));
                         }
                         else
                         {
-                            string safe = _index.ToString() + "." + imageObject.IdentifyImageFileExtension();
                             string file = Path.Combine(_dir, safe);
                             File.WriteAllBytes(file, imageObject.GetImageBytes());
                             _entries.Add(new EntrySettings(safe, file, null, null));

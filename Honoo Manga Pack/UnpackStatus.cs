@@ -7,9 +7,7 @@ namespace Honoo.MangaPack
         Unhandled,
         Unpacked,
         IsEmpty,
-        NotZip,
-        NotPdf,
         PasswordInvalid,
-        PdfUnsupported
+        Failed
     }
 }

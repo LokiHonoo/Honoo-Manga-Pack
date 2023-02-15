@@ -83,6 +83,7 @@ namespace Honoo.MangaPack
             Console.Clear();
             while (true)
             {
+                Console.WriteLine("========================================================================================================================");
                 Console.WriteLine($"选择了功能：{info}");
                 Console.WriteLine("拖放一个或多个文件夹到此窗口，回车后执行。直接回车返回上级菜单：");
                 Console.Write("DO>");

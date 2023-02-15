@@ -1,5 +1,7 @@
 ﻿using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
+using Roler.Toolkit.File.Mobi;
+using Roler.Toolkit.File.Mobi.Entity;
 using SharpCompress.Archives;
 using ShellProgressBar;
 using System;
@@ -28,11 +30,11 @@ namespace Honoo.MangaPack
                 Console.WriteLine("  Z. 返回上级");
                 Console.ResetColor();
                 Console.WriteLine();
-                Console.WriteLine($"  批量转换 ZIP/RAR/7Z/PDF，转换的 ZIP 文件保存在 \"源文件所在文件夹\\{Common.OutFolder}\" 中，同名文件将会被覆盖。");
-                Console.WriteLine("  不支持 ZIP/RAR/7Z 分卷压缩包，不支持图文混合 PDF。在程序文件夹下的 password.txt 保存可用密码列表。");
+                Console.WriteLine($"  批量转换 ZIP/RAR/7Z/PDF/mobi，转换的 ZIP 文件保存在 \"源文件所在文件夹\\{Common.OutFolder}\" 中，同名文件将会被覆盖。");
+                Console.WriteLine("  不支持 ZIP/RAR/7Z 分卷压缩包，PDF/mobi 仅提取图片。在程序文件夹下的 password.txt 保存压缩包可用密码列表。");
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("    1. ZIP/RAR/7Z 保留原有文件夹结构，PDF 内容保存在根文件夹                        Q. 忽略 Thumbs.db 文件 -- {0}", Common.IgnoreThumbs);
+                Console.WriteLine("    1. ZIP/RAR/7Z 保留原有文件夹结构，PDF/mobi 图片保存在根文件夹                   Q. 忽略 Thumbs.db 文件 -- {0}", Common.IgnoreThumbs);
                 Console.WriteLine();
                 Console.WriteLine("    2. 添加一层同名外包围文件夹");
                 Console.WriteLine();
@@ -56,7 +58,7 @@ namespace Honoo.MangaPack
                 Console.WriteLine("                              ├─ 002.jpg                                              ├─ 003.jpg");
                 Console.WriteLine();
                 Console.WriteLine();
-                Console.WriteLine("选择一个功能：（Z，1，3，4）...");
+                Console.WriteLine("选择一个功能：（Z，1，2，3，4）...");
                 while (true)
                 {
                     var kc = Console.ReadKey(true).KeyChar;
@@ -87,6 +89,7 @@ namespace Honoo.MangaPack
             Console.Clear();
             while (true)
             {
+                Console.WriteLine("========================================================================================================================");
                 Console.WriteLine($"选择了功能：{info}");
                 Console.WriteLine("拖放一个或多个 ZIP/RAR/7Z/PDF 文件到此窗口，回车后执行。直接回车返回上级菜单：");
                 Console.Write("DO>");
@@ -171,29 +174,49 @@ namespace Honoo.MangaPack
                 string mro = Path.GetDirectoryName(path)!;
                 mro = Path.Combine(mro, Common.OutFolder);
                 string main = Path.GetFileNameWithoutExtension(path);
+                string ext = Path.GetExtension(path).ToLowerInvariant();
                 UnpackStatus status = UnpackStatus.Unhandled;
                 IList<EntrySettings> entries;
                 string tempDir = Path.Combine(mro, main + "." + Path.GetRandomFileName());
                 bool createTempDir = false;
                 using (FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    Common.ReadOptions.Password = null;
-                    status = GetZipEntries(stream, main, mode, tempDir, out createTempDir, out entries);
-                    if (status == UnpackStatus.PasswordInvalid)
+                    switch (ext)
                     {
-                        foreach (string password in Common.Passwords)
-                        {
-                            Common.ReadOptions.Password = password;
-                            status = GetZipEntries(stream, main, mode, tempDir, out createTempDir, out entries);
-                            if (status is UnpackStatus.Unpacked or UnpackStatus.IsEmpty)
+                        case ".mobi":
+                            status = GetMobiEntries(stream, main, mode, tempDir, out createTempDir, out entries);
+                            if (status == UnpackStatus.Failed)
                             {
-                                break;
+                                Common.ReadOptions.Password = null;
+                                status = GetZipEntries(stream, main, mode, tempDir, out createTempDir, out entries);
                             }
-                        }
-                    }
-                    if (status == UnpackStatus.NotZip)
-                    {
-                        status = GetPdfEntries(stream, main, mode, tempDir, out createTempDir, out entries);
+                            break;
+
+                        case ".pdf":
+                            status = GetPdfEntries(stream, main, mode, tempDir, out createTempDir, out entries);
+                            if (status == UnpackStatus.Failed)
+                            {
+                                Common.ReadOptions.Password = null;
+                                status = GetZipEntries(stream, main, mode, tempDir, out createTempDir, out entries);
+                            }
+                            break;
+
+                        default:
+                            Common.ReadOptions.Password = null;
+                            status = GetZipEntries(stream, main, mode, tempDir, out createTempDir, out entries);
+                            if (status == UnpackStatus.PasswordInvalid)
+                            {
+                                foreach (string password in Common.Passwords)
+                                {
+                                    Common.ReadOptions.Password = password;
+                                    status = GetZipEntries(stream, main, mode, tempDir, out createTempDir, out entries);
+                                    if (status is UnpackStatus.Unpacked or UnpackStatus.IsEmpty)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                            break;
                     }
                 }
                 if (status == UnpackStatus.Unpacked)
@@ -218,6 +241,82 @@ namespace Honoo.MangaPack
             {
                 log.Add($"文件 {path} 不存在。");
                 error++;
+            }
+        }
+
+        private static UnpackStatus GetMobiEntries(Stream stream,
+                                                   string main,
+                                                   int mode,
+                                                   string tempDir,
+                                                   out bool createTempDir,
+                                                   out IList<EntrySettings> entries)
+        {
+            createTempDir = false;
+            stream.Seek(0, SeekOrigin.Begin);
+            try
+            {
+                using var reader = new MobiReader(stream);
+                Mobi mobi = reader.ReadWithoutText();
+                int index = (int)mobi.Structure.MobiHeader.FirstImageIndex;
+                int count = mobi.Structure.MobiHeader.LastContentRecordOffset - 1 - index;
+                if (count > 0)
+                {
+                    int pad = count.ToString().Length;
+                    IList<PalmDBRecordInfo> records = mobi.Structure.PalmDB.RecordInfoList;
+                    stream.Seek(records[index].Offset, SeekOrigin.Begin);
+                    if (stream.Length > 200 * 1024 * 1024)
+                    {
+                        if (!Directory.Exists(tempDir))
+                        {
+                            Directory.CreateDirectory(tempDir);
+                        }
+                        createTempDir = true;
+                        entries = new List<EntrySettings>();
+                        for (int i = 1; i < count + 1; i++)
+                        {
+                            string safe = i.ToString().PadLeft(pad, '0') + ".jpg";
+                            string file = Path.Combine(tempDir, safe);
+                            byte[] buffer = new byte[(int)records[index + 1].Offset - stream.Position];
+                            stream.Read(buffer, 0, buffer.Length);
+                            File.WriteAllBytes(file, buffer);
+                            entries.Add(new EntrySettings(safe, file, null, null));
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        createTempDir = false;
+                        entries = new List<EntrySettings>();
+                        for (int i = 1; i < count + 1; i++)
+                        {
+                            string safe = i.ToString().PadLeft(pad, '0') + ".jpg";
+                            byte[] buffer = new byte[(int)records[index + 1].Offset - stream.Position];
+                            stream.Read(buffer, 0, buffer.Length);
+                            MemoryStream temp = new(buffer);
+                            entries.Add(new EntrySettings(safe, null, temp, null));
+                            index++;
+                        }
+                    }
+                }
+                else
+                {
+                    entries = null!;
+                    return UnpackStatus.IsEmpty;
+                }
+            }
+            catch
+            {
+                entries = null!;
+                return UnpackStatus.Failed;
+            }
+            if (entries.Count > 0)
+            {
+                entries = SetNewKeys(entries, main + '\\', main, mode);
+                return UnpackStatus.Unpacked;
+            }
+            else
+            {
+                return UnpackStatus.IsEmpty;
             }
         }
 
@@ -250,7 +349,7 @@ namespace Honoo.MangaPack
                     entries = strategy.Entries;
                     if (strategy.Error > 0)
                     {
-                        return UnpackStatus.PdfUnsupported;
+                        return UnpackStatus.Failed;
                     }
                 }
                 else
@@ -266,14 +365,14 @@ namespace Honoo.MangaPack
                     entries = strategy.Entries;
                     if (strategy.Error > 0)
                     {
-                        return UnpackStatus.PdfUnsupported;
+                        return UnpackStatus.Failed;
                     }
                 }
             }
             catch
             {
                 entries = null!;
-                return UnpackStatus.NotPdf;
+                return UnpackStatus.Failed;
             }
             if (entries.Count > 0)
             {
@@ -352,7 +451,7 @@ namespace Honoo.MangaPack
             }
             catch
             {
-                return UnpackStatus.NotZip;
+                return UnpackStatus.Failed;
             }
             if (entries.Count > 0)
             {

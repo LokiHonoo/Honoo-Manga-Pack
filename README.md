@@ -14,13 +14,19 @@
 ## 简介
 
 漫画和图包的打包辅助工具。
-支持 ZIP/RAR/7Z/PDF 解压缩或重新打包到无压缩 ZIP 文件。
-支持自动试用解压缩密码。
+
+支持 ZIP/RAR/7Z/PDF/mobi 解压缩或重新打包到无压缩 ZIP 文件。
+
+支持自动试用解压缩密码（仅压缩包）。
 
 ## 引用组件
 
 [SharpCompress](https://github.com/adamhathcock/sharpcompress)
+
 [iText 7](https://itextpdf.com/)
+
+[RolerFileToolkit](https://github.com/rolerzhang/RolerFileToolkit)
+
 [ShellProgressBar](https://github.com/Mpdreamz/shellprogressbar)
 
 ## 授权
