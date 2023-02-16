@@ -91,7 +91,7 @@ namespace Honoo.MangaPack
             {
                 Console.WriteLine("========================================================================================================================");
                 Console.WriteLine($"选择了功能：{info}");
-                Console.WriteLine("拖放一个或多个 ZIP/RAR/7Z/PDF 文件到此窗口，回车后执行。直接回车返回上级菜单：");
+                Console.WriteLine("拖放一个或多个 ZIP/RAR/7Z/PDF/mobi 文件到此窗口，回车后执行。直接回车返回上级菜单：");
                 Console.Write("DO>");
                 string input = Console.ReadLine()!;
                 Console.Clear();

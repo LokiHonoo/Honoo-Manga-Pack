@@ -22,7 +22,7 @@ namespace Honoo.MangaPack
                 Console.WriteLine();
                 Console.WriteLine("                                    Copyright (C) Loki Honoo 2022. All rights reserved.");
                 Console.WriteLine();
-                Console.WriteLine("=========================================================================================================================");
+                Console.WriteLine("========================================================================================================================");
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("  1. 解压缩 ZIP/RAR/7ZIP/PDF/mobi                                                   Q. 忽略 Thumbs.db 文件 -- {0}", Common.IgnoreThumbs);
