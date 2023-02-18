@@ -32,12 +32,12 @@ namespace Honoo.MangaPack
                 Console.WriteLine("  3. ZIP/RAR/7ZIP/PDF/mobi 转换 ZIP（无压缩）");
                 Console.ResetColor();
                 Console.WriteLine();
-                Console.WriteLine();
                 Console.WriteLine("                                                                  *****************************************************");
                 Console.WriteLine("                                                                  *                                                   *");
                 Console.WriteLine("                                                                  *  不支持 RAR5 加密文件 （SharpCompress）           *");
                 Console.WriteLine("                                                                  *  不支持 PDF 加密文件                              *");
                 Console.WriteLine("                                                                  *  mobi 不提取封面，无法识别图片格式时保存为 .jpg   *");
+                Console.WriteLine("                                                                  *  mobi 提取还有许多问题                            *");
                 Console.WriteLine("                                                                  *                                                   *");
                 Console.WriteLine("                                                                  *****************************************************");
                 Console.WriteLine();

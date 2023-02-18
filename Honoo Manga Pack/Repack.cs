@@ -258,7 +258,17 @@ namespace Honoo.MangaPack
                 using var reader = new MobiReader(stream);
                 Mobi mobi = reader.ReadWithoutText();
                 int index = (int)mobi.Structure.MobiHeader.FirstImageIndex;
-                int count = mobi.Structure.MobiHeader.LastContentRecordOffset - 1 - index;
+                int count;
+                if (mobi.Structure.IndxHeader != null)
+                {
+                    index = (int)mobi.Structure.MobiHeader.FirstImageIndex + 1;
+                    count = (int)mobi.Structure.IndxHeader.TotalIndexCount;
+                }
+                else
+                {
+                    index = (int)mobi.Structure.MobiHeader.FirstImageIndex;
+                    count = mobi.Structure.MobiHeader.LastContentRecordOffset - 1 - index;
+                }
                 if (count > 0)
                 {
                     int pad = count.ToString().Length;
