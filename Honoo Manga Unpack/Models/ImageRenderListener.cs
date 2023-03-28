@@ -5,25 +5,22 @@ using iText.Kernel.Pdf.Xobject;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Honoo.MangaPack
+namespace Honoo.MangaUnpack.Models
 {
     public class ImageRenderListener : IEventListener
     {
         private readonly string _dir;
-        private readonly IList<EntrySettings> _entries = new List<EntrySettings>();
-        private readonly bool _useMemory;
+        private readonly int _pad;
         private int _error = 0;
         private int _index = 0;
 
-        public ImageRenderListener(bool useMemory, string dir)
+        public ImageRenderListener(int pages, string dir)
         {
-            _useMemory = useMemory;
+            _pad = pages.ToString().Length + 1;
             _dir = dir;
         }
 
         public int Error => _error;
-
-        internal IList<EntrySettings> Entries => _entries;
 
         public void EventOccurred(IEventData data, EventType type)
         {
@@ -35,19 +32,9 @@ namespace Honoo.MangaPack
                     if (imageObject != null)
                     {
                         _index++;
-                        string safe = _index.ToString() + "." + imageObject.IdentifyImageFileExtension();
-                        if (_useMemory)
-                        {
-                            MemoryStream temp = new(imageObject.GetImageBytes());
-                            temp.Seek(0, SeekOrigin.Begin);
-                            _entries.Add(new EntrySettings(safe, null, temp, null));
-                        }
-                        else
-                        {
-                            string file = Path.Combine(_dir, safe);
-                            File.WriteAllBytes(file, imageObject.GetImageBytes());
-                            _entries.Add(new EntrySettings(safe, file, null, null));
-                        }
+                        string safe = _index.ToString().PadLeft(_pad, '0') + "." + imageObject.IdentifyImageFileExtension();
+                        string file = Path.Combine(_dir, safe);
+                        File.WriteAllBytes(file, imageObject.GetImageBytes());
                     }
                 }
                 catch

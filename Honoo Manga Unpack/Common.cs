@@ -1,6 +1,6 @@
-﻿using Honoo.MangaPack.Models;
+﻿using Honoo.MangaUnpack.Models;
 
-namespace Honoo.MangaPack
+namespace Honoo.MangaUnpack
 {
     internal static class Common
     {

@@ -1,0 +1,83 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:conv="clr-namespace:Honoo.MangaUnpack.Converters"
+    xmlns:vm="clr-namespace:Honoo.MangaUnpack.ViewModels"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
+    x:Class="Honoo.MangaUnpack.MainWindow"
+    mc:Ignorable="d"
+    Title="Honoo Manga Unpack"
+    SizeToContent="Height"
+    Width="320"
+    Top="{Binding Settings.PositionTop, Mode=TwoWay}"
+    Left="{Binding Settings.PositionLeft, Mode=TwoWay}"
+    Topmost="{Binding Settings.Topmost,Mode=OneWay}"
+    ResizeMode="CanMinimize" 
+    Icon="Assets/yoriko10.ico">
+    <Window.Resources>
+        <conv:InfoButtonStyleConverter x:Key="InfoButtonStyleConverter" TrueValue="{StaticResource ButtonWarning.Small}" FalseValue="{StaticResource ButtonInfo.Small}" />
+    </Window.Resources>
+    <StackPanel Margin="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.RowSpan="2" BorderThickness="0" CornerRadius="8" Background="#FFD6EDC4" AllowDrop="True">
+                <b:Interaction.Triggers>
+                    <b:EventTrigger EventName="Drop">
+                        <b:InvokeCommandAction Command="{Binding DropCommand}"  PassEventArgsToCommand="True" />
+                    </b:EventTrigger>
+                </b:Interaction.Triggers>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="拖放压缩文件/PDF..." HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding CountTitle, Mode=OneWay}" d:Text="0" FontFamily="{StaticResource Font.LESLIE}"
+                               VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="36" />
+                </StackPanel>
+            </Border>
+            <Button Grid.Row="0" Grid.Column="1" Content="清 除" Height="48" Width="80" Margin="10,5,0,5"
+                        Style="{StaticResource ButtonDefault}" IsEnabled="{Binding Idle, Mode=OneWay}" Command="{Binding ClearCommand}" />
+            <Button Grid.Row="1" Grid.Column="1" Content="解 包" Height="48" Width="80" Margin="10,5,0,5"
+                        Style="{StaticResource ButtonPrimary}" IsEnabled="{Binding Idle, Mode=OneWay}" Command="{Binding UnpackCommand}" />
+        </Grid>
+        <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ProgressBar Style="{StaticResource ProgressBarFlat}" d:Value="50" Value="{Binding Progress, Mode=OneWay}" Height="4" />
+            <Button Grid.Column="1" Style="{Binding HasFailed, Mode=OneWay, Converter={StaticResource InfoButtonStyleConverter}}"
+                    d:Style="{d:StaticResource ButtonInfo.Small}"
+                    hc:IconElement.Geometry="{StaticResource InfoGeometry}" IsEnabled="{Binding Idle, Mode=OneWay}" Margin="10,0,0,0" />
+        </Grid>
+        <Border BorderThickness="0" CornerRadius="8" Background="#FFD6EDC4" Margin="0,10,0,0" Padding="10,5,10,5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ToggleButton Grid.Column="0" IsChecked="{Binding Settings.Topmost,Mode=TwoWay}" 
+                                 Style="{StaticResource ToggleButtonSwitch}"  hc:VisualElement.HighlightBrush="{DynamicResource PrimaryBrush}" />
+                <TextBlock Grid.Column="1" Text="总在最前" Margin="10,0,0,0" VerticalAlignment="Center"  />
+                <Button Grid.Column="2" Style="{StaticResource ButtonIconCircular}" hc:IconElement.Geometry="{StaticResource UpDownGeometry}"
+                       Command="{Binding ToggleShowSettingsCommand}" />
+            </Grid>
+        </Border>
+        <GroupBox Visibility="{Binding Settings.ShowSettings, Mode=OneWay}" Header="设置" Margin="0,10,0,0" hc:BorderElement.CornerRadius="8">
+            <Border BorderThickness="0" CornerRadius="8" Background="White" Margin="5" Padding="5">
+                <StackPanel>
+                    <CheckBox Content="移除嵌套文件夹" IsChecked="{Binding Settings.StructureOption, Mode=TwoWay}" Margin="5" />
+                </StackPanel>
+            </Border>
+        </GroupBox>
+    </StackPanel>
+</Window>
