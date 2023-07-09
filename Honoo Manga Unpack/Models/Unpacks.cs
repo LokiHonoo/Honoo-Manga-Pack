@@ -48,9 +48,19 @@ namespace Honoo.MangaUnpack.Models
 
         private static bool DoPdf(string file, IList<KeyValuePair<bool, string>> log)
         {
-            string dir = Path.GetFileNameWithoutExtension(file)!;
+            string parent = Path.GetDirectoryName(file)!;
+            string root = Common.Settings.SaveTargetOption == 1 ? Path.Combine(parent, "~Manga Unpack") : parent;
+            string title = Path.GetFileNameWithoutExtension(file)!;
+            string dir = Path.Combine(root, title);
+            int n = 1;
+            while (Directory.Exists(dir))
+            {
+                dir = Path.Combine(root, $"{title} ({n})");
+                n++;
+            }
             try
             {
+                Directory.CreateDirectory(dir);
                 using FileStream stream = new(file, FileMode.Open, FileAccess.Read, FileShare.Read);
                 using PdfDocument document = new(new PdfReader(stream));
                 int pages = document.GetNumberOfPages();
@@ -74,12 +84,13 @@ namespace Honoo.MangaUnpack.Models
         private static bool DoZip(string file, IList<KeyValuePair<bool, string>> log)
         {
             string parent = Path.GetDirectoryName(file)!;
+            string root = Common.Settings.SaveTargetOption == 1 ? Path.Combine(parent, "~Manga Unpack") : parent;
             string title = Path.GetFileNameWithoutExtension(file)!;
-            string dir = Path.Combine(parent, title);
+            string dir = Path.Combine(root, title);
             int n = 1;
             while (Directory.Exists(dir))
             {
-                dir = Path.Combine(parent, $"{title} ({n})");
+                dir = Path.Combine(root, $"{title} ({n})");
                 n++;
             }
             try

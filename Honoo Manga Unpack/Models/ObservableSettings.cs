@@ -24,6 +24,12 @@ namespace Honoo.MangaUnpack.Models
             set => SetProperty(_settings.PositionTop, value, _settings, (o, v) => o.PositionTop = v);
         }
 
+        public int SaveTargetOption
+        {
+            get => _settings.SaveTargetOption;
+            set => SetProperty(_settings.SaveTargetOption, value, _settings, (o, v) => o.SaveTargetOption = v);
+        }
+
         public Visibility ShowSettings
         {
             get => _settings.ShowSettings;

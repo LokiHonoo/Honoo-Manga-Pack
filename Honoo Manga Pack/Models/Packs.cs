@@ -25,14 +25,14 @@ namespace Honoo.MangaPack.Models
                 if (!string.IsNullOrEmpty(parent))
                 {
                     string title = Path.GetFileName(dir);
-                    if (Common.Settings.SuffixOne && string.IsNullOrWhiteSpace(Common.Settings.SuffixOneValue))
+                    if (Common.Settings.SuffixOne && !string.IsNullOrWhiteSpace(Common.Settings.SuffixOneValue))
                     {
                         if (!title.EndsWith(']'))
                         {
                             title = $"{title} {Common.Settings.SuffixOneValue}";
                         }
                     }
-                    if (Common.Settings.SuffixDiff && string.IsNullOrWhiteSpace(Common.Settings.SuffixDiffValue))
+                    if (Common.Settings.SuffixDiff && !string.IsNullOrWhiteSpace(Common.Settings.SuffixDiffValue))
                     {
                         if (title.IndexOf(Common.Settings.SuffixDiffValue) < 0)
                         {
@@ -88,6 +88,10 @@ namespace Honoo.MangaPack.Models
                                 {
                                     FileSystem.DeleteFile(zip, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
                                 }
+                            }
+                            if (!Directory.Exists(root))
+                            {
+                                Directory.CreateDirectory(root);
                             }
                             archive.SaveTo(zip, _writerOptions);
                             log.Add(new KeyValuePair<bool, string>(true, dir));

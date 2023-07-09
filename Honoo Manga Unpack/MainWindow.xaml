@@ -76,6 +76,10 @@
             <Border BorderThickness="0" CornerRadius="8" Background="White" Margin="5" Padding="5">
                 <StackPanel>
                     <CheckBox Content="移除嵌套文件夹" IsChecked="{Binding Settings.StructureOption, Mode=TwoWay}" Margin="5" />
+                    <ComboBox SelectedIndex="{Binding Settings.SaveTargetOption, Mode=TwoWay}" d:SelectedIndex="1" Margin="5">
+                        <ComboBoxItem Content="保存到 源文件夹同级" />
+                        <ComboBoxItem Content="保存到 源文件夹/~Manga Unpack/" />
+                    </ComboBox>
                 </StackPanel>
             </Border>
         </GroupBox>

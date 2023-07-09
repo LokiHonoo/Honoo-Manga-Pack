@@ -82,5 +82,17 @@ namespace Honoo.MangaUnpack.Properties {
                 this["StructureOption"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int SaveTargetOption {
+            get {
+                return ((int)(this["SaveTargetOption"]));
+            }
+            set {
+                this["SaveTargetOption"] = value;
+            }
+        }
     }
 }

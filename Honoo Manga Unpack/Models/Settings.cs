@@ -7,9 +7,9 @@ namespace Honoo.MangaUnpack.Models
         public int PositionLeft { get; set; }
         public int PositionTop { get; set; }
 
+        public int SaveTargetOption { get; set; }
         public Visibility ShowSettings { get; set; }
         public bool StructureOption { get; set; }
-
         public bool Topmost { get; set; }
     }
 }
