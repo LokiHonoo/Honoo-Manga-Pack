@@ -41,11 +41,11 @@ namespace Honoo.MangaPack
 
             if (Common.Settings.PositionTop + 100 > SystemParameters.PrimaryScreenHeight)
             {
-                Common.Settings.PositionTop = 300;
+                Common.Settings.PositionTop = 400;
             }
-            if (Common.Settings.PositionLeft + 300 > SystemParameters.PrimaryScreenWidth)
+            if (Common.Settings.PositionLeft + 100 > SystemParameters.PrimaryScreenWidth)
             {
-                Common.Settings.PositionLeft = 300;
+                Common.Settings.PositionLeft = 400;
             }
         }
     }

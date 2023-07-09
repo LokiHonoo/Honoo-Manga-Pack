@@ -21,26 +21,22 @@ namespace Honoo.MangaPack.Models
         {
             if (Directory.Exists(dir))
             {
-                string parent = Path.GetDirectoryName(dir)!;
-                if (!string.IsNullOrEmpty(parent))
+                string root = Path.GetDirectoryName(dir)!;
+                if (!string.IsNullOrEmpty(root))
                 {
+                    if (Common.Settings.SaveTargetOption == 1)
+                    {
+                        root = Path.Combine(root, "~Manga Pack");
+                    }
                     string title = Path.GetFileName(dir);
-                    if (Common.Settings.SuffixOne && !string.IsNullOrWhiteSpace(Common.Settings.SuffixOneValue))
+                    if (Common.Settings.SuffixOne && !string.IsNullOrWhiteSpace(Common.Settings.SuffixOneValue) && !title.EndsWith(']'))
                     {
-                        if (!title.EndsWith(']'))
-                        {
-                            title = $"{title} {Common.Settings.SuffixOneValue}";
-                        }
+                        title = $"{title} {Common.Settings.SuffixOneValue}";
                     }
-                    if (Common.Settings.SuffixDiff && !string.IsNullOrWhiteSpace(Common.Settings.SuffixDiffValue))
+                    if (Common.Settings.SuffixDiff && !string.IsNullOrWhiteSpace(Common.Settings.SuffixDiffValue) && title.IndexOf(Common.Settings.SuffixDiffValue) < 0)
                     {
-                        if (title.IndexOf(Common.Settings.SuffixDiffValue) < 0)
-                        {
-                            title = $"{title} {Common.Settings.SuffixDiffValue}";
-                        }
+                        title = $"{title} {Common.Settings.SuffixDiffValue}";
                     }
-                    string root = Common.Settings.SaveTargetOption == 1 ? Path.Combine(parent, "~Manga Pack") : parent;
-                    string zip = Path.Combine(root, $"{title}.zip");
                     int remove = dir.Length;
                     if (Common.Settings.StructureOption)
                     {
@@ -73,6 +69,7 @@ namespace Honoo.MangaPack.Models
                         }
                         if (archive.Entries.Count > 0)
                         {
+                            string zip = Path.Combine(root, $"{title}.zip");
                             if (Common.Settings.CollisionOption == 1)
                             {
                                 int n = 1;

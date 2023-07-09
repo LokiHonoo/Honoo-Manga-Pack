@@ -100,17 +100,19 @@ namespace Honoo.MangaUnpack.ViewModels
                 {
                     for (int i = 0; i < _dirs.Count; i++)
                     {
+                        int p = (int)Math.Floor((i + 1d) / _dirs.Count * 100);
+                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "Progress");
                         if (!Unpacks.Do(_dirs[i], _log))
                         {
                             hasFailed = true;
                         }
-                        int p = (int)Math.Floor((i + 1d) / _dirs.Count * 100);
-                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "Progress");
+                        this.CountTitle--;
                     }
                 });
                 _dirs.Clear();
                 this.HasFailed = hasFailed;
                 this.CountTitle = 0;
+                WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "Progress");
                 this.Idle = true;
             }
         }

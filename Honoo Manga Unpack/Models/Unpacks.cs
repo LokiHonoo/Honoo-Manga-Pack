@@ -17,9 +17,9 @@ namespace Honoo.MangaUnpack.Models
             ExtractFullPath = true
         };
 
-        private static readonly ReaderOptions _readOptions = new()
+        private static readonly ReaderOptions _readerOptions = new()
         {
-            ArchiveEncoding = new ArchiveEncoding(Encoding.UTF8, Encoding.UTF8),
+            ArchiveEncoding = new ArchiveEncoding(Encoding.GetEncoding("GB2312"), Encoding.GetEncoding("GB2312")),
             LookForHeader = true
         };
 
@@ -48,9 +48,12 @@ namespace Honoo.MangaUnpack.Models
 
         private static bool DoPdf(string file, IList<KeyValuePair<bool, string>> log)
         {
-            string parent = Path.GetDirectoryName(file)!;
-            string root = Common.Settings.SaveTargetOption == 1 ? Path.Combine(parent, "~Manga Unpack") : parent;
-            string title = Path.GetFileNameWithoutExtension(file)!;
+            string root = Path.GetDirectoryName(file)!;
+            if (Common.Settings.SaveTargetOption == 1)
+            {
+                root = Path.Combine(root, "~Manga Unpack");
+            }
+            string title = Path.GetFileNameWithoutExtension(file);
             string dir = Path.Combine(root, title);
             int n = 1;
             while (Directory.Exists(dir))
@@ -76,16 +79,18 @@ namespace Honoo.MangaUnpack.Models
             catch (System.Exception)
             {
             }
-
             log.Add(new KeyValuePair<bool, string>(false, file));
             return false;
         }
 
         private static bool DoZip(string file, IList<KeyValuePair<bool, string>> log)
         {
-            string parent = Path.GetDirectoryName(file)!;
-            string root = Common.Settings.SaveTargetOption == 1 ? Path.Combine(parent, "~Manga Unpack") : parent;
-            string title = Path.GetFileNameWithoutExtension(file)!;
+            string root = Path.GetDirectoryName(file)!;
+            if (Common.Settings.SaveTargetOption == 1)
+            {
+                root = Path.Combine(root, "~Manga Unpack");
+            }
+            string title = Path.GetFileNameWithoutExtension(file);
             string dir = Path.Combine(root, title);
             int n = 1;
             while (Directory.Exists(dir))
@@ -96,40 +101,70 @@ namespace Honoo.MangaUnpack.Models
             try
             {
                 Directory.CreateDirectory(dir);
-                using (IArchive archive = ArchiveFactory.Open(file, _readOptions))
+                using (IArchive archive = ArchiveFactory.Open(file, _readerOptions))
                 {
                     archive.WriteToDirectory(dir, _extractionOptions);
                 }
-
+                string dir2 = dir;
+                string title2 = title;
                 if (Common.Settings.StructureOption)
                 {
-                    string[] d = Directory.GetDirectories(dir);
-                    string[] f = Directory.GetFiles(dir);
-                    string dirl = dir;
+                    string[] d = Directory.GetDirectories(dir2);
+                    string[] f = Directory.GetFiles(dir2);
                     while (d.Length == 1 && f.Length == 0)
                     {
-                        dirl = d[0];
-                        d = Directory.GetDirectories(dirl);
-                        f = Directory.GetFiles(dirl);
+                        string t = Path.GetFileName(d[0]);
+                        if (t.Length > title2.Length)
+                        {
+                            title2 = t;
+                        }
+                        dir2 = d[0];
+                        d = Directory.GetDirectories(dir2);
+                        f = Directory.GetFiles(dir2);
                     }
-                    if (dirl != dir)
+                    if (dir2 != dir)
                     {
-                        string dirD = Directory.GetDirectories(dir)[0];
-                        foreach (string e in d)
+                        if (title2 == title)
                         {
-                            Directory.Move(e, dir);
+                            foreach (var item in d)
+                            {
+                                Directory.Move(item, dir);
+                            }
+                            foreach (string item in f)
+                            {
+                                string fileName = Path.GetFileName(item);
+                                if (!fileName.Equals("Thumbs.db", System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    File.Move(item, Path.Combine(dir, fileName));
+                                }
+                            }
+                            Directory.Delete(dir2, true);
                         }
-                        foreach (string e in f)
+                        else
                         {
-                            File.Move(e, Path.Combine(dir, Path.GetFileName(e)));
+                            string dir3 = Path.Combine(root, title2);
+                            n = 1;
+                            while (Directory.Exists(dir3))
+                            {
+                                dir3 = Path.Combine(root, $"{title2} ({n})");
+                                n++;
+                            }
+                            Directory.CreateDirectory(dir3);
+                            foreach (var item in d)
+                            {
+                                Directory.Move(item, dir3);
+                            }
+                            foreach (string item in f)
+                            {
+                                string fileName = Path.GetFileName(item);
+                                if (!fileName.Equals("Thumbs.db", System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    File.Move(item, Path.Combine(dir3, fileName));
+                                }
+                            }
+                            Directory.Delete(dir, true);
                         }
-                        Directory.Delete(dirD, true);
                     }
-                }
-                string[] t = Directory.GetFiles(dir, "Thumbs.db", SearchOption.AllDirectories);
-                foreach (string e in t)
-                {
-                    File.Delete(e);
                 }
                 log.Add(new KeyValuePair<bool, string>(true, file));
                 return true;

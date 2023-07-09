@@ -29,7 +29,7 @@ namespace Honoo.MangaUnpack
             {
                 Common.Settings.PositionTop = 300;
             }
-            if (Common.Settings.PositionLeft + 300 > SystemParameters.PrimaryScreenWidth)
+            if (Common.Settings.PositionLeft + 100 > SystemParameters.PrimaryScreenWidth)
             {
                 Common.Settings.PositionLeft = 300;
             }
