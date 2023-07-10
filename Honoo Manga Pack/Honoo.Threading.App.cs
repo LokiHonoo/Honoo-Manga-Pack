@@ -1,10 +1,8 @@
 ﻿/*
- * Copyright
- *
  * https://github.com/LokiHonoo/development-resources
  * Copyright (C) Loki Honoo 2015. All rights reserved.
  *
- * This code page is published under the terms of the MIT license.
+ * This code page is published by the MIT license.
  */
 
 using System.Threading;

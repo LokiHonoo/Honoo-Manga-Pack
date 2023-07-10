@@ -1,4 +1,5 @@
-﻿using iText.Kernel.Pdf;
+﻿using Honoo.MangaPack.Models;
+using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using Microsoft.VisualBasic.FileIO;
 using SharpCompress.Archives;
@@ -24,38 +25,38 @@ namespace Honoo.MangaUnpack.Models
             LookForHeader = true
         };
 
-        internal static bool Do(string path, out KeyValuePair<bool, string> log)
+        internal static bool Do(string path, Settings settings, out KeyValuePair<string, bool> log)
         {
             if (File.Exists(path))
             {
                 string ext = Path.GetExtension(path).ToLowerInvariant()!;
                 switch (ext)
                 {
-                    case ".zip": case ".rar": case ".7z": return DoZip(path, out log);
-                    case ".pdf": return DoPdf(path, out log);
-                    case ".mobi": return DoMobi(path, out log);
+                    case ".zip": case ".rar": case ".7z": return DoZip(path, settings, out log);
+                    case ".pdf": return DoPdf(path, settings, out log);
+                    case ".mobi": return DoMobi(path, settings, out log);
                     default: break;
                 }
             }
-            log = new KeyValuePair<bool, string>(false, path);
+            log = new KeyValuePair<string, bool>(path, false);
             return false;
         }
 
-        private static bool DoMobi(string path, out KeyValuePair<bool, string> log)
+        private static bool DoMobi(string path, Settings settings, out KeyValuePair<string, bool> log)
         {
-            log = new KeyValuePair<bool, string>(false, path);
+            log = new KeyValuePair<string, bool>(path, false);
             return false;
         }
 
-        private static bool DoPdf(string path, out KeyValuePair<bool, string> log)
+        private static bool DoPdf(string path, Settings settings, out KeyValuePair<string, bool> log)
         {
             if (File.Exists(path))
             {
                 string file = path;
                 string root = Path.GetDirectoryName(file)!;
-                if (Common.Settings.SaveTargetOption == 1)
+                if (settings.UnpackSaveTo)
                 {
-                    root = Path.Combine(root, "~Manga Unpack");
+                    root = Path.Combine(root, "~Manga Pack");
                 }
                 string title = Path.GetFileNameWithoutExtension(file);
                 string dir = Path.Combine(root, title);
@@ -77,7 +78,7 @@ namespace Honoo.MangaUnpack.Models
                     {
                         parser.ProcessPageContent(document.GetPage(i));
                     }
-                    if (Common.Settings.DelOriginalOption)
+                    if (settings.UnpackDelOrigin)
                     {
                         try
                         {
@@ -87,26 +88,26 @@ namespace Honoo.MangaUnpack.Models
                         {
                         }
                     }
-                    log = new KeyValuePair<bool, string>(true, path);
+                    log = new KeyValuePair<string, bool>(path, true);
                     return true;
                 }
                 catch
                 {
                 }
             }
-            log = new KeyValuePair<bool, string>(false, path);
+            log = new KeyValuePair<string, bool>(path, false);
             return false;
         }
 
-        private static bool DoZip(string path, out KeyValuePair<bool, string> log)
+        private static bool DoZip(string path, Settings settings, out KeyValuePair<string, bool> log)
         {
             if (File.Exists(path))
             {
                 string file = path;
                 string root = Path.GetDirectoryName(file)!;
-                if (Common.Settings.SaveTargetOption == 1)
+                if (settings.UnpackSaveTo)
                 {
-                    root = Path.Combine(root, "~Manga Unpack");
+                    root = Path.Combine(root, "~Manga Pack");
                 }
                 string title = Path.GetFileNameWithoutExtension(file);
                 string dir = Path.Combine(root, title);
@@ -125,7 +126,7 @@ namespace Honoo.MangaUnpack.Models
                     }
                     string dir2 = dir;
                     string title2 = title;
-                    if (Common.Settings.StructureOption)
+                    if (settings.UnpackRemoveNested)
                     {
                         string[] d = Directory.GetDirectories(dir2);
                         string[] f = Directory.GetFiles(dir2);
@@ -179,7 +180,7 @@ namespace Honoo.MangaUnpack.Models
                             }
                         }
                     }
-                    if (Common.Settings.DelOriginalOption)
+                    if (settings.UnpackDelOrigin)
                     {
                         try
                         {
@@ -189,14 +190,14 @@ namespace Honoo.MangaUnpack.Models
                         {
                         }
                     }
-                    log = new KeyValuePair<bool, string>(true, path);
+                    log = new KeyValuePair<string, bool>(path, true);
                     return true;
                 }
                 catch
                 {
                 }
             }
-            log = new KeyValuePair<bool, string>(false, path);
+            log = new KeyValuePair<string, bool>(path, false);
             return false;
         }
     }

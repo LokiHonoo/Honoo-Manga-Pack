@@ -7,62 +7,108 @@ using HandyControl.Data;
 using Honoo.MangaPack.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 
 namespace Honoo.MangaPack.ViewModels
 {
-    public class MainWindowViewModel : ObservableObject
+    public sealed class MainWindowViewModel : ObservableObject
     {
-        private readonly List<string> _dirs = new();
-        private readonly List<KeyValuePair<bool, string>> _log = new();
-        private bool _busy = false;
-        private int _countTitle = 0;
-        private bool _hasFailed = false;
-        private int _progress = 0;
+        private bool _packAbort = false;
+        private ObservableCollection<string> _packEntries = new();
+        private bool _packing;
+        private int _packingProgress;
+        private ObservableCollection<KeyValuePair<string, bool>> _packLog = new();
         private ObservableSettings _settings = new(Common.Settings);
+        private bool _unpackAbort = false;
+        private ObservableCollection<string> _unpackEntries = new();
+        private bool _unpacking;
+        private int _unpackingProgress;
+        private ObservableCollection<KeyValuePair<string, bool>> _unpackLog = new();
 
         public MainWindowViewModel()
         {
-            this.ToggleShowSettingsCommand = new RelayCommand(ToggleShowSettings);
-            this.DropCommand = new RelayCommand<DragEventArgs>(Drop);
-            this.ClearCommand = new RelayCommand(Clear);
+            this.PackDropCommand = new RelayCommand<DragEventArgs>(PackDrop);
+            this.PackClearCommand = new RelayCommand(PackClear, () => { return !_packing; });
             this.PackCommand = new AsyncRelayCommand(Pack);
-            this.ShowInfoCommand = new RelayCommand(ShowInfo);
+            this.UnpackDropCommand = new RelayCommand<DragEventArgs>(UnpackDrop);
+            this.UnpackClearCommand = new RelayCommand(UnpackClear, () => { return !_unpacking; });
+            this.UnpackCommand = new AsyncRelayCommand(Unpack);
 
-            WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "Progress", (recipient, messenger) =>
-            {
-                this.Progress = messenger.Value;
-            });
+            //WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "PackProgress", (recipient, messenger) =>
+            //{
+            //});
+            //WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "UnpackProgress", (recipient, messenger) =>
+            //{
+            //});
         }
 
-        public bool Busy { get => _busy; set => SetProperty(ref _busy, value); }
-        public IRelayCommand ClearCommand { get; set; }
-
-        public int CountTitle { get => _countTitle; set => SetProperty(ref _countTitle, value); }
-
-        public IRelayCommand DropCommand { get; set; }
-
-        public bool HasFailed { get => _hasFailed; set => SetProperty(ref _hasFailed, value); }
+        public IRelayCommand PackClearCommand { get; set; }
         public IRelayCommand PackCommand { get; set; }
-
-        public int Progress { get => _progress; set => SetProperty(ref _progress, value); }
-
+        public IRelayCommand PackDropCommand { get; set; }
+        public ObservableCollection<string> PackEntries { get => _packEntries; set => SetProperty(ref _packEntries, value); }
+        public bool Packing { get => _packing; set => SetProperty(ref _packing, value); }
+        public int PackingProgress { get => _packingProgress; set => SetProperty(ref _packingProgress, value); }
+        public ObservableCollection<KeyValuePair<string, bool>> PackLog { get => _packLog; set => SetProperty(ref _packLog, value); }
         public ObservableSettings Settings { get => _settings; set => SetProperty(ref _settings, value); }
+        public IRelayCommand UnpackClearCommand { get; set; }
+        public IRelayCommand UnpackCommand { get; set; }
+        public IRelayCommand UnpackDropCommand { get; set; }
+        public ObservableCollection<string> UnpackEntries { get => _unpackEntries; set => SetProperty(ref _unpackEntries, value); }
+        public bool Unpacking { get => _unpacking; set => SetProperty(ref _unpacking, value); }
+        public int UnpackingProgress { get => _unpackingProgress; set => SetProperty(ref _unpackingProgress, value); }
+        public ObservableCollection<KeyValuePair<string, bool>> UnpackLog { get => _unpackLog; set => SetProperty(ref _unpackLog, value); }
 
-        public IRelayCommand ShowInfoCommand { get; set; }
-
-        public IRelayCommand ToggleShowSettingsCommand { get; set; }
-
-        private void Clear()
+        private async Task Pack()
         {
-            _dirs.Clear();
-            this.CountTitle = 0;
+            if (this.Packing)
+            {
+                _packAbort = false;
+            }
+            else
+            {
+                if (this.PackEntries.Count > 0)
+                {
+                    _packAbort = false;
+                    this.Packing = true;
+                    this.PackLog.Clear();
+                    await Task.Run(() =>
+                    {
+                        int total = this.PackEntries.Count;
+                        for (int i = this.PackEntries.Count - 1; i >= 0; i--)
+                        {
+                            if (!_packAbort)
+                            {
+                                int p = (int)Math.Floor((i + 1d) / total * 100);
+                                WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "PackProgress");
+                                if (!Packs.Do(this.PackEntries[i], Common.Settings.Clone(), out KeyValuePair<string, bool> log))
+                                {
+                                    Growl.WarningGlobal(new GrowlInfo
+                                    {
+                                        ShowCloseButton = false,
+                                        ShowDateTime = false,
+                                        Message = log.Key
+                                    });
+                                }
+                                this.PackEntries.RemoveAt(i);
+                                this.PackLog.Add(log);
+                            }
+                        }
+                    });
+                    this.Packing = false;
+                }
+            }
         }
 
-        private void Drop(DragEventArgs? e)
+        private void PackClear()
         {
-            if (!this.Busy)
+            this.PackEntries.Clear();
+        }
+
+        private void PackDrop(DragEventArgs? e)
+        {
+            if (!this.Packing)
             {
                 if (e != null)
                 {
@@ -74,9 +120,9 @@ namespace Honoo.MangaPack.ViewModels
                             foreach (var entry in entries)
                             {
                                 bool exists = false;
-                                foreach (var dir in _dirs)
+                                foreach (var entry2 in this.PackEntries)
                                 {
-                                    if (entry == dir)
+                                    if (entry2 == entry)
                                     {
                                         exists = true;
                                         break;
@@ -84,59 +130,92 @@ namespace Honoo.MangaPack.ViewModels
                                 }
                                 if (!exists)
                                 {
-                                    _dirs.Add(entry);
+                                    this.PackEntries.Add(entry);
                                 }
                             }
-                            this.CountTitle = _dirs.Count;
                         }
                     }
                 }
             }
         }
 
-        private async Task Pack()
+        private async Task Unpack()
         {
-            if (_dirs.Count > 0)
+            if (this.Unpacking)
             {
-                this.Busy = true;
-                this.Progress = 0;
-                _log.Clear();
-                bool hasFailed = false;
-                await Task.Run(() =>
+                _unpackAbort = false;
+            }
+            else
+            {
+                if (this.UnpackEntries.Count > 0)
                 {
-                    for (int i = 0; i < _dirs.Count; i++)
+                    _unpackAbort = false;
+                    this.Unpacking = true;
+                    this.UnpackLog.Clear();
+                    await Task.Run(() =>
                     {
-                        int p = (int)Math.Floor((i + 1d) / _dirs.Count * 100);
-                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "Progress");
-                        if (!Packs.Do(_dirs[i], out KeyValuePair<bool, string> log))
+                        int total = this.UnpackEntries.Count;
+                        for (int i = this.UnpackEntries.Count - 1; i >= 0; i--)
                         {
-                            Growl.WarningGlobal(new GrowlInfo
+                            if (!_unpackAbort)
                             {
-                                ShowCloseButton = false,
-                                ShowDateTime = false,
-                                Message = log.Value
-                            });
-                            hasFailed = true;
+                                int p = (int)Math.Floor((i + 1d) / total * 100);
+                                WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "UnpackProgress");
+                                if (!Packs.Do(this.UnpackEntries[i], Common.Settings.Clone(), out KeyValuePair<string, bool> log))
+                                {
+                                    Growl.WarningGlobal(new GrowlInfo
+                                    {
+                                        ShowCloseButton = false,
+                                        ShowDateTime = false,
+                                        Message = log.Key
+                                    });
+                                }
+                                this.UnpackEntries.RemoveAt(i);
+                                this.UnpackLog.Add(log);
+                            }
                         }
-                        _log.Add(log);
-                        this.CountTitle--;
-                    }
-                });
-                _dirs.Clear();
-                this.HasFailed = hasFailed;
-                this.CountTitle = 0;
-                WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "Progress");
-                this.Busy = false;
+                    });
+                    this.Unpacking = false;
+                }
             }
         }
 
-        private void ShowInfo()
+        private void UnpackClear()
         {
+            this.UnpackEntries.Clear();
         }
 
-        private void ToggleShowSettings()
+        private void UnpackDrop(DragEventArgs? e)
         {
-            this.Settings.ShowSettings = !this.Settings.ShowSettings;
+            if (!this.Unpacking)
+            {
+                if (e != null)
+                {
+                    if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                    {
+                        string[] entries = (string[])e.Data.GetData(DataFormats.FileDrop);
+                        if (entries.Length > 0)
+                        {
+                            foreach (var entry in entries)
+                            {
+                                bool exists = false;
+                                foreach (var entry2 in this.UnpackEntries)
+                                {
+                                    if (entry2 == entry)
+                                    {
+                                        exists = true;
+                                        break;
+                                    }
+                                }
+                                if (!exists)
+                                {
+                                    this.UnpackEntries.Add(entry);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

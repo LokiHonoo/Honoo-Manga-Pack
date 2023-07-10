@@ -17,7 +17,7 @@ namespace Honoo.MangaPack.Models
             ArchiveEncoding = new ArchiveEncoding(Encoding.UTF8, Encoding.UTF8)
         };
 
-        internal static bool Do(string path, out KeyValuePair<bool, string> log)
+        internal static bool Do(string path, Settings settings, out KeyValuePair<string, bool> log)
         {
             if (Directory.Exists(path))
             {
@@ -25,21 +25,21 @@ namespace Honoo.MangaPack.Models
                 string root = Path.GetDirectoryName(dir)!;
                 if (!string.IsNullOrEmpty(root))
                 {
-                    if (Common.Settings.SaveTargetOption == 1)
+                    if (settings.PackSaveTo)
                     {
                         root = Path.Combine(root, "~Manga Pack");
                     }
                     string title = Path.GetFileName(dir);
-                    if (Common.Settings.SuffixOne && !string.IsNullOrWhiteSpace(Common.Settings.SuffixOneValue) && !title.EndsWith(']'))
+                    if (settings.PackSuffixEnd && !string.IsNullOrWhiteSpace(settings.PackSuffixEndValue) && !title.EndsWith(']'))
                     {
-                        title = $"{title} {Common.Settings.SuffixOneValue}";
+                        title = $"{title} {settings.PackSuffixEndValue}";
                     }
-                    if (Common.Settings.SuffixDiff && !string.IsNullOrWhiteSpace(Common.Settings.SuffixDiffValue) && title.IndexOf(Common.Settings.SuffixDiffValue) < 0)
+                    if (settings.PackSuffixDiff && !string.IsNullOrWhiteSpace(settings.PackSuffixDiffValue) && title.IndexOf(settings.PackSuffixDiffValue) < 0)
                     {
-                        title = $"{title} {Common.Settings.SuffixDiffValue}";
+                        title = $"{title} {settings.PackSuffixDiffValue}";
                     }
                     int remove = dir.Length;
-                    if (Common.Settings.StructureOption)
+                    if (settings.PackRemoveNested)
                     {
                         string[] d = Directory.GetDirectories(dir);
                         string[] f = Directory.GetFiles(dir);
@@ -61,7 +61,7 @@ namespace Honoo.MangaPack.Models
                             if (!file.EndsWith("Thumbs.db", StringComparison.OrdinalIgnoreCase))
                             {
                                 string key = file[remove..];
-                                if (Common.Settings.ZipRootOption)
+                                if (settings.PackRoot)
                                 {
                                     key = $"{title}{key}";
                                 }
@@ -71,7 +71,7 @@ namespace Honoo.MangaPack.Models
                         if (archive.Entries.Count > 0)
                         {
                             string zip = Path.Combine(root, $"{title}.zip");
-                            if (Common.Settings.CollisionOption == 1)
+                            if (settings.PackNamesake == 1)
                             {
                                 int n = 1;
                                 while (File.Exists(zip))
@@ -92,13 +92,13 @@ namespace Honoo.MangaPack.Models
                                 Directory.CreateDirectory(root);
                             }
                             archive.SaveTo(zip, _writerOptions);
-                            log = new KeyValuePair<bool, string>(true, path);
+                            log = new KeyValuePair<string, bool>(path, true);
                             return true;
                         }
                     }
                 }
             }
-            log = new KeyValuePair<bool, string>(false, path);
+            log = new KeyValuePair<string, bool>(path, false);
             return false;
         }
     }
