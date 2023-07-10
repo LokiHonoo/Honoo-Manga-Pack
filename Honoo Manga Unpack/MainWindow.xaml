@@ -16,11 +16,12 @@
     Top="{Binding Settings.PositionTop, Mode=TwoWay}"
     Left="{Binding Settings.PositionLeft, Mode=TwoWay}"
     Topmost="{Binding Settings.Topmost,Mode=OneWay}"
-    ResizeMode="CanMinimize" 
+    ResizeMode="CanMinimize"
     Icon="Assets/yoriko10.ico">
     <Window.Resources>
-        <conv:InfoButtonStyleConverter x:Key="InfoButtonStyleConverter" TrueValue="{StaticResource ButtonWarning.Small}" FalseValue="{StaticResource ButtonInfo.Small}" />
-    </Window.Resources>
+        <conv:BooleanConverter x:Key="ReverseBooleanConverter" TrueValue="False" FalseValue="True" />
+        <conv:BooleanConverter x:Key="VisibilityConverter" TrueValue="{x:Static Visibility.Visible}" FalseValue="{x:Static Visibility.Collapsed}" />
+        <conv:BooleanConverter x:Key="InfoButtonStyleConverter" TrueValue="{StaticResource ButtonWarning.Small}" FalseValue="{StaticResource ButtonInfo.Small}" />    </Window.Resources>
     <StackPanel Margin="10">
         <Grid>
             <Grid.RowDefinitions>
@@ -52,13 +53,13 @@
                                  Height="4" Margin="20,0,20,5" Background="#FFD6EDC4" />
                 </Grid>
             </Border>
-            <Button Grid.Row="0" Grid.Column="1" Content="清 除" Height="36" Width="80" Margin="10,0,0,5"
-                        Style="{StaticResource ButtonDefault}" IsEnabled="{Binding Idle, Mode=OneWay}" Command="{Binding ClearCommand}" />
-            <Button Grid.Row="1" Grid.Column="1" Content="解 包" Height="36" Width="80" Margin="10,5,0,5"
-                        Style="{StaticResource ButtonPrimary}" IsEnabled="{Binding Idle, Mode=OneWay}" Command="{Binding UnpackCommand}" />
+            <Button Grid.Row="0" Grid.Column="1" Content="清 除" Height="36" Width="80" Margin="10,0,0,5" Command="{Binding ClearCommand}"
+                        Style="{StaticResource ButtonDefault}" IsEnabled="{Binding Busy, Mode=OneWay, Converter={StaticResource ReverseBooleanConverter}}" />
+            <Button Grid.Row="1" Grid.Column="1" Content="解 包" Height="36" Width="80" Margin="10,5,0,5" Command="{Binding UnpackCommand}"
+                        Style="{StaticResource ButtonPrimary}" IsEnabled="{Binding Busy, Mode=OneWay, Converter={StaticResource ReverseBooleanConverter}}" />
             <Button Grid.Row="2" Grid.Column="1" Style="{Binding HasFailed, Mode=OneWay, Converter={StaticResource InfoButtonStyleConverter}}"
-                    d:Style="{d:StaticResource ButtonInfo.Small}"
-                    hc:IconElement.Geometry="{StaticResource InfoGeometry}" IsEnabled="{Binding Idle, Mode=OneWay}" Margin="10,5,0,0" HorizontalAlignment="Right" />
+                    d:Style="{d:StaticResource ButtonInfo.Small}" Margin="10,5,0,0" HorizontalAlignment="Right" Command="{Binding ShowInfoCommand}"
+                    hc:IconElement.Geometry="{StaticResource InfoGeometry}" />
         </Grid>
         <Border BorderThickness="0" CornerRadius="8" Background="#FFD6EDC4" Margin="0,10,0,0" Padding="10,5,10,5">
             <Grid>
@@ -67,14 +68,16 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <ToggleButton Grid.Column="0" IsChecked="{Binding Settings.Topmost,Mode=TwoWay}" 
+                <ToggleButton Grid.Column="0" IsChecked="{Binding Settings.Topmost,Mode=TwoWay}"
                                  Style="{StaticResource ToggleButtonSwitch}"  hc:VisualElement.HighlightBrush="{DynamicResource PrimaryBrush}" />
-                <TextBlock Grid.Column="1" Text="总在最前" Margin="10,0,0,0" VerticalAlignment="Center"  />
+                <TextBlock Grid.Column="1" Text="总在最前" Margin="10,0,0,0" VerticalAlignment="Center" />
                 <Button Grid.Column="2" Style="{StaticResource ButtonIconCircular}" hc:IconElement.Geometry="{StaticResource UpDownGeometry}"
                        Command="{Binding ToggleShowSettingsCommand}" />
             </Grid>
         </Border>
-        <GroupBox Visibility="{Binding Settings.ShowSettings, Mode=OneWay}" IsEnabled="{Binding Idle, Mode=OneWay}" Header="设置" Margin="0,10,0,0" hc:BorderElement.CornerRadius="8">
+        <GroupBox Header="设置" Margin="0,10,0,0" hc:BorderElement.CornerRadius="8"
+                  Visibility="{Binding Settings.ShowSettings, Mode=OneWay, Converter={StaticResource VisibilityConverter}}"
+                  IsEnabled="{Binding Busy, Mode=OneWay, Converter={StaticResource ReverseBooleanConverter}}">
             <Border BorderThickness="0" CornerRadius="8" Background="White" Margin="5" Padding="5">
                 <StackPanel>
                     <CheckBox Content="移除嵌套文件夹" IsChecked="{Binding Settings.StructureOption, Mode=TwoWay}" Margin="5" />
@@ -82,6 +85,7 @@
                         <ComboBoxItem Content="保存到 源文件夹同级" />
                         <ComboBoxItem Content="保存到 源文件夹/~Manga Unpack/" />
                     </ComboBox>
+                    <CheckBox Content="源文件移入回收站" IsChecked="{Binding Settings.DelOriginalOption, Mode=TwoWay}" Margin="5" />
                 </StackPanel>
             </Border>
         </GroupBox>

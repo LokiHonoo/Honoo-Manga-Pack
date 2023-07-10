@@ -30,10 +30,16 @@ namespace Honoo.MangaUnpack.Models
             set => SetProperty(_settings.SaveTargetOption, value, _settings, (o, v) => o.SaveTargetOption = v);
         }
 
-        public Visibility ShowSettings
+        public bool ShowSettings
         {
             get => _settings.ShowSettings;
             set => SetProperty(_settings.ShowSettings, value, _settings, (o, v) => o.ShowSettings = v);
+        }
+
+        public bool DelOriginalOption
+        {
+            get => _settings.DelOriginalOption;
+            set => SetProperty(_settings.DelOriginalOption, value, _settings, (o, v) => o.DelOriginalOption = v);
         }
 
         public bool StructureOption

@@ -2,6 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using HandyControl.Controls;
+using HandyControl.Data;
 using Honoo.MangaPack.Models;
 using System;
 using System.Collections.Generic;
@@ -14,9 +16,9 @@ namespace Honoo.MangaPack.ViewModels
     {
         private readonly List<string> _dirs = new();
         private readonly List<KeyValuePair<bool, string>> _log = new();
+        private bool _busy = false;
         private int _countTitle = 0;
         private bool _hasFailed = false;
-        private bool _idle = true;
         private int _progress = 0;
         private ObservableSettings _settings = new(Common.Settings);
 
@@ -26,6 +28,7 @@ namespace Honoo.MangaPack.ViewModels
             this.DropCommand = new RelayCommand<DragEventArgs>(Drop);
             this.ClearCommand = new RelayCommand(Clear);
             this.PackCommand = new AsyncRelayCommand(Pack);
+            this.ShowInfoCommand = new RelayCommand(ShowInfo);
 
             WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "Progress", (recipient, messenger) =>
             {
@@ -33,14 +36,21 @@ namespace Honoo.MangaPack.ViewModels
             });
         }
 
+        public bool Busy { get => _busy; set => SetProperty(ref _busy, value); }
         public IRelayCommand ClearCommand { get; set; }
+
         public int CountTitle { get => _countTitle; set => SetProperty(ref _countTitle, value); }
+
         public IRelayCommand DropCommand { get; set; }
+
         public bool HasFailed { get => _hasFailed; set => SetProperty(ref _hasFailed, value); }
-        public bool Idle { get => _idle; set => SetProperty(ref _idle, value); }
         public IRelayCommand PackCommand { get; set; }
+
         public int Progress { get => _progress; set => SetProperty(ref _progress, value); }
+
         public ObservableSettings Settings { get => _settings; set => SetProperty(ref _settings, value); }
+
+        public IRelayCommand ShowInfoCommand { get; set; }
 
         public IRelayCommand ToggleShowSettingsCommand { get; set; }
 
@@ -52,7 +62,7 @@ namespace Honoo.MangaPack.ViewModels
 
         private void Drop(DragEventArgs? e)
         {
-            if (this.Idle)
+            if (!this.Busy)
             {
                 if (e != null)
                 {
@@ -88,7 +98,7 @@ namespace Honoo.MangaPack.ViewModels
         {
             if (_dirs.Count > 0)
             {
-                this.Idle = false;
+                this.Busy = true;
                 this.Progress = 0;
                 _log.Clear();
                 bool hasFailed = false;
@@ -98,10 +108,17 @@ namespace Honoo.MangaPack.ViewModels
                     {
                         int p = (int)Math.Floor((i + 1d) / _dirs.Count * 100);
                         WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "Progress");
-                        if (!Packs.Do(_dirs[i], _log))
+                        if (!Packs.Do(_dirs[i], out KeyValuePair<bool, string> log))
                         {
+                            Growl.WarningGlobal(new GrowlInfo
+                            {
+                                ShowCloseButton = false,
+                                ShowDateTime = false,
+                                Message = log.Value
+                            });
                             hasFailed = true;
                         }
+                        _log.Add(log);
                         this.CountTitle--;
                     }
                 });
@@ -109,13 +126,17 @@ namespace Honoo.MangaPack.ViewModels
                 this.HasFailed = hasFailed;
                 this.CountTitle = 0;
                 WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "Progress");
-                this.Idle = true;
+                this.Busy = false;
             }
+        }
+
+        private void ShowInfo()
+        {
         }
 
         private void ToggleShowSettings()
         {
-            this.Settings.ShowSettings = this.Settings.ShowSettings == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+            this.Settings.ShowSettings = !this.Settings.ShowSettings;
         }
     }
 }

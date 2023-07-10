@@ -36,7 +36,7 @@ namespace Honoo.MangaPack.Models
             set => SetProperty(_settings.SaveTargetOption, value, _settings, (o, v) => o.SaveTargetOption = v);
         }
 
-        public Visibility ShowSettings
+        public bool ShowSettings
         {
             get => _settings.ShowSettings;
             set => SetProperty(_settings.ShowSettings, value, _settings, (o, v) => o.ShowSettings = v);

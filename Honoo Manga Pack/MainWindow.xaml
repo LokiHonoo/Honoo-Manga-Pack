@@ -19,7 +19,9 @@
     ResizeMode="CanMinimize"
     Icon="Assets/yoriko18.ico">
     <Window.Resources>
-        <conv:InfoButtonStyleConverter x:Key="InfoButtonStyleConverter" TrueValue="{StaticResource ButtonWarning.Small}" FalseValue="{StaticResource ButtonInfo.Small}" />
+        <conv:BooleanConverter x:Key="ReverseBooleanConverter" TrueValue="False" FalseValue="True" />
+        <conv:BooleanConverter x:Key="VisibilityConverter" TrueValue="{x:Static Visibility.Visible}" FalseValue="{x:Static Visibility.Collapsed}" />
+        <conv:BooleanConverter x:Key="InfoButtonStyleConverter" TrueValue="{StaticResource ButtonWarning.Small}" FalseValue="{StaticResource ButtonInfo.Small}" />
     </Window.Resources>
     <StackPanel Margin="10">
         <Grid>
@@ -52,13 +54,13 @@
                                  Height="4" Margin="20,0,20,5" Background="#FFC5D9F9" />
                 </Grid>
             </Border>
-            <Button Grid.Row="0" Grid.Column="1" Content="清 除" Height="36" Width="80" Margin="10,0,0,5"
-                        Style="{StaticResource ButtonDefault}" IsEnabled="{Binding Idle, Mode=OneWay}" Command="{Binding ClearCommand}" />
-            <Button Grid.Row="1" Grid.Column="1" Content="打 包" Height="36" Width="80" Margin="10,5,0,5"
-                        Style="{StaticResource ButtonPrimary}" IsEnabled="{Binding Idle, Mode=OneWay}" Command="{Binding PackCommand}" />
+            <Button Grid.Row="0" Grid.Column="1" Content="清 除" Height="36" Width="80" Margin="10,0,0,5" Command="{Binding ClearCommand}"
+                        Style="{StaticResource ButtonDefault}" IsEnabled="{Binding Busy, Mode=OneWay, Converter={StaticResource ReverseBooleanConverter}}" />
+            <Button Grid.Row="1" Grid.Column="1" Content="打 包" Height="36" Width="80" Margin="10,5,0,5" Command="{Binding PackCommand}"
+                        Style="{StaticResource ButtonPrimary}" IsEnabled="{Binding Busy, Mode=OneWay, Converter={StaticResource ReverseBooleanConverter}}" />
             <Button Grid.Row="2" Grid.Column="1" Style="{Binding HasFailed, Mode=OneWay, Converter={StaticResource InfoButtonStyleConverter}}"
-                    d:Style="{d:StaticResource ButtonInfo.Small}"
-                    hc:IconElement.Geometry="{StaticResource InfoGeometry}" IsEnabled="{Binding Idle, Mode=OneWay}" Margin="10,5,0,0" HorizontalAlignment="Right" />
+                    d:Style="{d:StaticResource ButtonInfo.Small}" Margin="10,5,0,0" HorizontalAlignment="Right" Command="{Binding ShowInfoCommand}"
+                    hc:IconElement.Geometry="{StaticResource InfoGeometry}" />
         </Grid>
         <Border BorderThickness="0" CornerRadius="8" Background="#FFC5D9F9" Margin="0,10,0,0" Padding="10,5,10,5">
             <Grid>
@@ -74,7 +76,9 @@
                        Command="{Binding ToggleShowSettingsCommand}" />
             </Grid>
         </Border>
-        <GroupBox Visibility="{Binding Settings.ShowSettings, Mode=OneWay}" IsEnabled="{Binding Idle, Mode=OneWay}" Header="设置" Margin="0,10,0,0" hc:BorderElement.CornerRadius="8">
+        <GroupBox Header="设置" Margin="0,10,0,0" hc:BorderElement.CornerRadius="8"
+                  Visibility="{Binding Settings.ShowSettings, Mode=OneWay, Converter={StaticResource VisibilityConverter}}"
+                  IsEnabled="{Binding Busy, Mode=OneWay, Converter={StaticResource ReverseBooleanConverter}}">
             <Border BorderThickness="0" CornerRadius="8" Background="White" Margin="5" Padding="5">
                 <StackPanel>
                     <CheckBox Content="如果没有 “[xxxx]” 后缀则添加后缀" IsChecked="{Binding Settings.SuffixOne, Mode=TwoWay}" Margin="5" />

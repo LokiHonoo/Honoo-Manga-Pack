@@ -5,16 +5,16 @@ using System.Windows.Data;
 
 namespace Honoo.MangaUnpack.Converters
 {
-    public sealed class InfoButtonStyleConverter : IValueConverter
+    public sealed class BooleanConverter : IValueConverter
     {
         public object FalseValue { get; set; } = DependencyProperty.UnsetValue;
         public object TrueValue { get; set; } = DependencyProperty.UnsetValue;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool hasFailed)
+            if (value is bool boolean)
             {
-                return hasFailed ? TrueValue : FalseValue;
+                return boolean ? TrueValue : FalseValue;
             }
             return DependencyProperty.UnsetValue;
         }

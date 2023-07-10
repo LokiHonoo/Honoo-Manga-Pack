@@ -17,10 +17,11 @@ namespace Honoo.MangaPack.Models
             ArchiveEncoding = new ArchiveEncoding(Encoding.UTF8, Encoding.UTF8)
         };
 
-        internal static bool Do(string dir, IList<KeyValuePair<bool, string>> log)
+        internal static bool Do(string path, out KeyValuePair<bool, string> log)
         {
-            if (Directory.Exists(dir))
+            if (Directory.Exists(path))
             {
+                string dir = path;
                 string root = Path.GetDirectoryName(dir)!;
                 if (!string.IsNullOrEmpty(root))
                 {
@@ -91,13 +92,13 @@ namespace Honoo.MangaPack.Models
                                 Directory.CreateDirectory(root);
                             }
                             archive.SaveTo(zip, _writerOptions);
-                            log.Add(new KeyValuePair<bool, string>(true, dir));
+                            log = new KeyValuePair<bool, string>(true, path);
                             return true;
                         }
                     }
                 }
             }
-            log.Add(new KeyValuePair<bool, string>(false, dir));
+            log = new KeyValuePair<bool, string>(false, path);
             return false;
         }
     }

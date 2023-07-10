@@ -94,5 +94,17 @@ namespace Honoo.MangaUnpack.Properties {
                 this["SaveTargetOption"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DelOriginalOption {
+            get {
+                return ((bool)(this["DelOriginalOption"]));
+            }
+            set {
+                this["DelOriginalOption"] = value;
+            }
+        }
     }
 }

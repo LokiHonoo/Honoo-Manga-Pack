@@ -1,5 +1,6 @@
 ﻿using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
+using Microsoft.VisualBasic.FileIO;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompress.Readers;
@@ -23,156 +24,179 @@ namespace Honoo.MangaUnpack.Models
             LookForHeader = true
         };
 
-        internal static bool Do(string file, IList<KeyValuePair<bool, string>> log)
+        internal static bool Do(string path, out KeyValuePair<bool, string> log)
         {
-            if (File.Exists(file))
+            if (File.Exists(path))
             {
-                string ext = Path.GetExtension(file).ToLowerInvariant()!;
+                string ext = Path.GetExtension(path).ToLowerInvariant()!;
                 switch (ext)
                 {
-                    case ".zip": case ".rar": case ".7z": return DoZip(file, log);
-                    case ".pdf": return DoPdf(file, log);
-                    case ".mobi": return DoMobi(file, log);
+                    case ".zip": case ".rar": case ".7z": return DoZip(path, out log);
+                    case ".pdf": return DoPdf(path, out log);
+                    case ".mobi": return DoMobi(path, out log);
                     default: break;
                 }
             }
-            log.Add(new KeyValuePair<bool, string>(false, file));
+            log = new KeyValuePair<bool, string>(false, path);
             return false;
         }
 
-        private static bool DoMobi(string file, IList<KeyValuePair<bool, string>> log)
+        private static bool DoMobi(string path, out KeyValuePair<bool, string> log)
         {
-            log.Add(new KeyValuePair<bool, string>(false, file));
+            log = new KeyValuePair<bool, string>(false, path);
             return false;
         }
 
-        private static bool DoPdf(string file, IList<KeyValuePair<bool, string>> log)
+        private static bool DoPdf(string path, out KeyValuePair<bool, string> log)
         {
-            string root = Path.GetDirectoryName(file)!;
-            if (Common.Settings.SaveTargetOption == 1)
+            if (File.Exists(path))
             {
-                root = Path.Combine(root, "~Manga Unpack");
-            }
-            string title = Path.GetFileNameWithoutExtension(file);
-            string dir = Path.Combine(root, title);
-            int n = 1;
-            while (Directory.Exists(dir))
-            {
-                dir = Path.Combine(root, $"{title} ({n})");
-                n++;
-            }
-            try
-            {
-                Directory.CreateDirectory(dir);
-                using FileStream stream = new(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-                using PdfDocument document = new(new PdfReader(stream));
-                int pages = document.GetNumberOfPages();
-                ImageRenderListener strategy = new(pages, dir);
-                PdfCanvasProcessor parser = new(strategy);
-                for (var i = 1; i <= pages; i++)
+                string file = path;
+                string root = Path.GetDirectoryName(file)!;
+                if (Common.Settings.SaveTargetOption == 1)
                 {
-                    parser.ProcessPageContent(document.GetPage(i));
+                    root = Path.Combine(root, "~Manga Unpack");
                 }
-                log.Add(new KeyValuePair<bool, string>(true, file));
-                return true;
-            }
-            catch (System.Exception)
-            {
-            }
-            log.Add(new KeyValuePair<bool, string>(false, file));
-            return false;
-        }
-
-        private static bool DoZip(string file, IList<KeyValuePair<bool, string>> log)
-        {
-            string root = Path.GetDirectoryName(file)!;
-            if (Common.Settings.SaveTargetOption == 1)
-            {
-                root = Path.Combine(root, "~Manga Unpack");
-            }
-            string title = Path.GetFileNameWithoutExtension(file);
-            string dir = Path.Combine(root, title);
-            int n = 1;
-            while (Directory.Exists(dir))
-            {
-                dir = Path.Combine(root, $"{title} ({n})");
-                n++;
-            }
-            try
-            {
-                Directory.CreateDirectory(dir);
-                using (IArchive archive = ArchiveFactory.Open(file, _readerOptions))
+                string title = Path.GetFileNameWithoutExtension(file);
+                string dir = Path.Combine(root, title);
+                int n = 1;
+                while (Directory.Exists(dir))
                 {
-                    archive.WriteToDirectory(dir, _extractionOptions);
+                    dir = Path.Combine(root, $"{title} ({n})");
+                    n++;
                 }
-                string dir2 = dir;
-                string title2 = title;
-                if (Common.Settings.StructureOption)
+                try
                 {
-                    string[] d = Directory.GetDirectories(dir2);
-                    string[] f = Directory.GetFiles(dir2);
-                    while (d.Length == 1 && f.Length == 0)
+                    Directory.CreateDirectory(dir);
+                    using FileStream stream = new(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    using PdfDocument document = new(new PdfReader(stream));
+                    int pages = document.GetNumberOfPages();
+                    ImageRenderListener strategy = new(pages, dir);
+                    PdfCanvasProcessor parser = new(strategy);
+                    for (var i = 1; i <= pages; i++)
                     {
-                        string t = Path.GetFileName(d[0]);
-                        if (t.Length > title2.Length)
-                        {
-                            title2 = t;
-                        }
-                        dir2 = d[0];
-                        d = Directory.GetDirectories(dir2);
-                        f = Directory.GetFiles(dir2);
+                        parser.ProcessPageContent(document.GetPage(i));
                     }
-                    if (dir2 != dir)
+                    if (Common.Settings.DelOriginalOption)
                     {
-                        if (title2 == title)
+                        try
                         {
-                            foreach (var item in d)
-                            {
-                                Directory.Move(item, dir);
-                            }
-                            foreach (string item in f)
-                            {
-                                string fileName = Path.GetFileName(item);
-                                if (!fileName.Equals("Thumbs.db", System.StringComparison.OrdinalIgnoreCase))
-                                {
-                                    File.Move(item, Path.Combine(dir, fileName));
-                                }
-                            }
-                            Directory.Delete(dir2, true);
+                            FileSystem.DeleteFile(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
                         }
-                        else
+                        catch
                         {
-                            string dir3 = Path.Combine(root, title2);
-                            n = 1;
-                            while (Directory.Exists(dir3))
-                            {
-                                dir3 = Path.Combine(root, $"{title2} ({n})");
-                                n++;
-                            }
-                            Directory.CreateDirectory(dir3);
-                            foreach (var item in d)
-                            {
-                                Directory.Move(item, dir3);
-                            }
-                            foreach (string item in f)
-                            {
-                                string fileName = Path.GetFileName(item);
-                                if (!fileName.Equals("Thumbs.db", System.StringComparison.OrdinalIgnoreCase))
-                                {
-                                    File.Move(item, Path.Combine(dir3, fileName));
-                                }
-                            }
-                            Directory.Delete(dir, true);
                         }
                     }
+                    log = new KeyValuePair<bool, string>(true, path);
+                    return true;
                 }
-                log.Add(new KeyValuePair<bool, string>(true, file));
-                return true;
+                catch
+                {
+                }
             }
-            catch
+            log = new KeyValuePair<bool, string>(false, path);
+            return false;
+        }
+
+        private static bool DoZip(string path, out KeyValuePair<bool, string> log)
+        {
+            if (File.Exists(path))
             {
+                string file = path;
+                string root = Path.GetDirectoryName(file)!;
+                if (Common.Settings.SaveTargetOption == 1)
+                {
+                    root = Path.Combine(root, "~Manga Unpack");
+                }
+                string title = Path.GetFileNameWithoutExtension(file);
+                string dir = Path.Combine(root, title);
+                int n = 1;
+                while (Directory.Exists(dir))
+                {
+                    dir = Path.Combine(root, $"{title} ({n})");
+                    n++;
+                }
+                try
+                {
+                    Directory.CreateDirectory(dir);
+                    using (IArchive archive = ArchiveFactory.Open(file, _readerOptions))
+                    {
+                        archive.WriteToDirectory(dir, _extractionOptions);
+                    }
+                    string dir2 = dir;
+                    string title2 = title;
+                    if (Common.Settings.StructureOption)
+                    {
+                        string[] d = Directory.GetDirectories(dir2);
+                        string[] f = Directory.GetFiles(dir2);
+                        while (d.Length == 1 && f.Length == 0)
+                        {
+                            string t = Path.GetFileName(d[0]);
+                            if (t.Length > title2.Length)
+                            {
+                                title2 = t;
+                            }
+                            dir2 = d[0];
+                            d = Directory.GetDirectories(dir2);
+                            f = Directory.GetFiles(dir2);
+                        }
+                        if (dir2 != dir)
+                        {
+                            if (title2 == title)
+                            {
+                                string dir3 = Path.Combine(root, Path.GetRandomFileName());
+                                Directory.Move(dir2, dir3);
+                                Directory.Delete(dir, true);
+                                Directory.Move(dir3, dir);
+                                string[] thumbs = Directory.GetFiles(dir, "Thumbs.db", System.IO.SearchOption.AllDirectories);
+                                if (thumbs.Length > 0)
+                                {
+                                    foreach (string thumb in thumbs)
+                                    {
+                                        File.Delete(thumb);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                string dir3 = Path.Combine(root, title2);
+                                n = 1;
+                                while (Directory.Exists(dir3))
+                                {
+                                    dir3 = Path.Combine(root, $"{title2} ({n})");
+                                    n++;
+                                }
+                                Directory.Move(dir2, dir3);
+                                Directory.Delete(dir, true);
+                                string[] thumbs = Directory.GetFiles(dir3, "Thumbs.db", System.IO.SearchOption.AllDirectories);
+                                if (thumbs.Length > 0)
+                                {
+                                    foreach (string thumb in thumbs)
+                                    {
+                                        File.Delete(thumb);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (Common.Settings.DelOriginalOption)
+                    {
+                        try
+                        {
+                            FileSystem.DeleteFile(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    log = new KeyValuePair<bool, string>(true, path);
+                    return true;
+                }
+                catch
+                {
+                }
             }
-            log.Add(new KeyValuePair<bool, string>(false, file));
+            log = new KeyValuePair<bool, string>(false, path);
             return false;
         }
     }
