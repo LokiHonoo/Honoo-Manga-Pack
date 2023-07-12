@@ -5,7 +5,7 @@ using iText.Kernel.Pdf.Xobject;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Honoo.MangaUnpack.Models
+namespace Honoo.MangaPack.Models
 {
     public class ImageRenderListener : IEventListener
     {

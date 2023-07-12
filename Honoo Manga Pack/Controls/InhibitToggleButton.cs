@@ -6,6 +6,7 @@ namespace Honoo.MangaPack.Controls
     {
         protected override void OnToggle()
         {
+            //base.OnToggle();
         }
     }
 }

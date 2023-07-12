@@ -1,5 +1,4 @@
-﻿using Honoo.MangaPack.Models;
-using iText.Kernel.Pdf;
+﻿using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using Microsoft.VisualBasic.FileIO;
 using SharpCompress.Archives;
@@ -9,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Honoo.MangaUnpack.Models
+namespace Honoo.MangaPack.Models
 {
     internal static class Unpacks
     {
@@ -40,6 +39,26 @@ namespace Honoo.MangaUnpack.Models
             }
             log = new KeyValuePair<string, bool>(path, false);
             return false;
+        }
+
+        private static void DelUseless(string path)
+        {
+            string[] dels = Directory.GetFiles(path, "Thumbs.db", System.IO.SearchOption.AllDirectories);
+            if (dels.Length > 0)
+            {
+                foreach (string del in dels)
+                {
+                    File.Delete(del);
+                }
+            }
+            dels = Directory.GetFiles(path, "desktop.ini", System.IO.SearchOption.AllDirectories);
+            if (dels.Length > 0)
+            {
+                foreach (string del in dels)
+                {
+                    File.Delete(del);
+                }
+            }
         }
 
         private static bool DoMobi(string path, Settings settings, out KeyValuePair<string, bool> log)
@@ -149,14 +168,7 @@ namespace Honoo.MangaUnpack.Models
                                 Directory.Move(dir2, dir3);
                                 Directory.Delete(dir, true);
                                 Directory.Move(dir3, dir);
-                                string[] thumbs = Directory.GetFiles(dir, "Thumbs.db", System.IO.SearchOption.AllDirectories);
-                                if (thumbs.Length > 0)
-                                {
-                                    foreach (string thumb in thumbs)
-                                    {
-                                        File.Delete(thumb);
-                                    }
-                                }
+                                DelUseless(dir);
                             }
                             else
                             {
@@ -169,14 +181,7 @@ namespace Honoo.MangaUnpack.Models
                                 }
                                 Directory.Move(dir2, dir3);
                                 Directory.Delete(dir, true);
-                                string[] thumbs = Directory.GetFiles(dir3, "Thumbs.db", System.IO.SearchOption.AllDirectories);
-                                if (thumbs.Length > 0)
-                                {
-                                    foreach (string thumb in thumbs)
-                                    {
-                                        File.Delete(thumb);
-                                    }
-                                }
+                                DelUseless(dir3);
                             }
                         }
                     }

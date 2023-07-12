@@ -7,7 +7,6 @@ using HandyControl.Data;
 using Honoo.MangaPack.Models;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -15,123 +14,133 @@ namespace Honoo.MangaPack.ViewModels
 {
     public sealed class MainWindowViewModel : ObservableObject
     {
-        private bool _packAbort = false;
-        private ObservableCollection<string> _packEntries = new();
-        private bool _packing;
-        private int _packingProgress;
-        private ObservableCollection<KeyValuePair<string, bool>> _packLog = new();
+        //  private bool _packAbort = false;
+        //  private bool _packing;
+        //  private int _packingProgress;
+        //  private ObservableCollection<KeyValuePair<string, bool>> _packLog = new();
+        // private bool _unpackAbort = false;
+        // private bool _unpacking;
+        // private int _unpackingProgress;
+        // private ObservableCollection<KeyValuePair<string, bool>> _unpackLog = new();
+        // private ObservableCollection<string> _unpackEntries = new();
+        //  private ObservableCollection<string> _packEntries = new();
+
+        private ObservableWorkStatus _packStatus = new();
         private ObservableSettings _settings = new(Common.Settings);
-        private bool _unpackAbort = false;
-        private ObservableCollection<string> _unpackEntries = new();
-        private bool _unpacking;
-        private int _unpackingProgress;
-        private ObservableCollection<KeyValuePair<string, bool>> _unpackLog = new();
+        private ObservableWorkStatus _unpackStatus = new();
 
         public MainWindowViewModel()
         {
-            this.PackDropCommand = new RelayCommand<DragEventArgs>(PackDrop);
-            this.PackClearCommand = new RelayCommand(PackClear, () => { return !_packing; });
-            this.PackCommand = new AsyncRelayCommand(Pack);
-            this.UnpackDropCommand = new RelayCommand<DragEventArgs>(UnpackDrop);
-            this.UnpackClearCommand = new RelayCommand(UnpackClear, () => { return !_unpacking; });
-            this.UnpackCommand = new AsyncRelayCommand(Unpack);
+            this.PackDropCommand = new RelayCommand<DragEventArgs>(PackDrop, (e) => { return !this.PackStatus.Running; });
+            this.PackClearCommand = new RelayCommand(PackClear, () => { return !this.PackStatus.Running; });
+            this.PackCommand = new RelayCommand(Pack);
+            this.UnpackDropCommand = new RelayCommand<DragEventArgs>(UnpackDrop, (e) => { return !this.UnpackStatus.Running; });
+            this.UnpackClearCommand = new RelayCommand(UnpackClear, () => { return !this.UnpackStatus.Running; });
+            this.UnpackCommand = new RelayCommand(Unpack);
 
-            //WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "PackProgress", (recipient, messenger) =>
-            //{
-            //});
-            //WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "UnpackProgress", (recipient, messenger) =>
-            //{
-            //});
+            WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "PackProgress", (recipient, messenger) =>
+            {
+                this.PackStatus.Progress = messenger.Value;
+            });
+            WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "UnpackProgress", (recipient, messenger) =>
+            {
+                this.UnpackStatus.Progress = messenger.Value;
+            });
         }
 
         public IRelayCommand PackClearCommand { get; set; }
         public IRelayCommand PackCommand { get; set; }
         public IRelayCommand PackDropCommand { get; set; }
-        public ObservableCollection<string> PackEntries { get => _packEntries; set => SetProperty(ref _packEntries, value); }
-        public bool Packing { get => _packing; set => SetProperty(ref _packing, value); }
-        public int PackingProgress { get => _packingProgress; set => SetProperty(ref _packingProgress, value); }
-        public ObservableCollection<KeyValuePair<string, bool>> PackLog { get => _packLog; set => SetProperty(ref _packLog, value); }
+        public ObservableWorkStatus PackStatus { get => _packStatus; set => SetProperty(ref _packStatus, value); }
         public ObservableSettings Settings { get => _settings; set => SetProperty(ref _settings, value); }
         public IRelayCommand UnpackClearCommand { get; set; }
         public IRelayCommand UnpackCommand { get; set; }
         public IRelayCommand UnpackDropCommand { get; set; }
-        public ObservableCollection<string> UnpackEntries { get => _unpackEntries; set => SetProperty(ref _unpackEntries, value); }
-        public bool Unpacking { get => _unpacking; set => SetProperty(ref _unpacking, value); }
-        public int UnpackingProgress { get => _unpackingProgress; set => SetProperty(ref _unpackingProgress, value); }
-        public ObservableCollection<KeyValuePair<string, bool>> UnpackLog { get => _unpackLog; set => SetProperty(ref _unpackLog, value); }
+        public ObservableWorkStatus UnpackStatus { get => _unpackStatus; set => SetProperty(ref _unpackStatus, value); }
+        // public ObservableCollection<string> UnpackEntries { get => _unpackEntries; set => SetProperty(ref _unpackEntries, value); }
+        // public ObservableCollection<string> PackEntries { get => _packEntries; set => SetProperty(ref _packEntries, value); }
+        // public bool Packing { get => _packing; set => SetProperty(ref _packing, value); }
+        //  public int PackingProgress { get => _packingProgress; set => SetProperty(ref _packingProgress, value); }
+        //  public ObservableCollection<KeyValuePair<string, bool>> PackLog { get => _packLog; set => SetProperty(ref _packLog, value); }
+        //  public bool Unpacking { get => _unpacking; set => SetProperty(ref _unpacking, value); }
+        // public int UnpackingProgress { get => _unpackingProgress; set => SetProperty(ref _unpackingProgress, value); }
+        // public ObservableCollection<KeyValuePair<string, bool>> UnpackLog { get => _unpackLog; set => SetProperty(ref _unpackLog, value); }
 
-        private async Task Pack()
+        private void Pack()
         {
-            if (this.Packing)
+            if (this.PackStatus.Running)
             {
-                _packAbort = false;
+                this.PackStatus.Abort = false;
             }
             else
             {
-                if (this.PackEntries.Count > 0)
+                if (this.PackStatus.Projects.Count > 0)
                 {
-                    _packAbort = false;
-                    this.Packing = true;
-                    this.PackLog.Clear();
-                    await Task.Run(() =>
-                    {
-                        int total = this.PackEntries.Count;
-                        for (int i = this.PackEntries.Count - 1; i >= 0; i--)
-                        {
-                            if (!_packAbort)
-                            {
-                                int p = (int)Math.Floor((i + 1d) / total * 100);
-                                WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "PackProgress");
-                                if (!Packs.Do(this.PackEntries[i], Common.Settings.Clone(), out KeyValuePair<string, bool> log))
-                                {
-                                    Growl.WarningGlobal(new GrowlInfo
-                                    {
-                                        ShowCloseButton = false,
-                                        ShowDateTime = false,
-                                        Message = log.Key
-                                    });
-                                }
-                                this.PackEntries.RemoveAt(i);
-                                this.PackLog.Add(log);
-                            }
-                        }
-                    });
-                    this.Packing = false;
+                    this.PackStatus.Abort = false;
+                    this.PackStatus.Running = true;
+                    this.PackStatus.Log.Clear();
+                    this.PackStatus.HasError = false;
+                    Task.Run(() =>
+                   {
+                       int total = this.PackStatus.Projects.Count;
+                       double num = 0;
+                       Settings settings = Common.Settings.Clone();
+                       for (int i = this.PackStatus.Projects.Count - 1; i >= 0; i--)
+                       {
+                           if (!this.PackStatus.Abort)
+                           {
+                               num++;
+                               int p = (int)Math.Floor(num / total * 100);
+                               WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "PackProgress");
+                               if (!Packs.Do(this.PackStatus.Projects[i], settings, out KeyValuePair<string, bool> log))
+                               {
+                                   this.PackStatus.HasError = true;
+                                   Growl.WarningGlobal(new GrowlInfo
+                                   {
+                                       ShowCloseButton = false,
+                                       ShowDateTime = false,
+                                       Message = log.Key
+                                   });
+                               }
+                               this.PackStatus.Projects.RemoveAt(i);
+                               this.PackStatus.Log.Add(log);
+                           }
+                       }
+                       WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "PackProgress");
+                       this.PackStatus.Running = false;
+                   });
                 }
             }
         }
 
         private void PackClear()
         {
-            this.PackEntries.Clear();
+            this.PackStatus.Projects.Clear();
         }
 
         private void PackDrop(DragEventArgs? e)
         {
-            if (!this.Packing)
+            if (e != null)
             {
-                if (e != null)
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
-                    if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                    string[] entries = (string[])e.Data.GetData(DataFormats.FileDrop);
+                    if (entries.Length > 0)
                     {
-                        string[] entries = (string[])e.Data.GetData(DataFormats.FileDrop);
-                        if (entries.Length > 0)
+                        foreach (var entry in entries)
                         {
-                            foreach (var entry in entries)
+                            bool exists = false;
+                            foreach (var project in this.PackStatus.Projects)
                             {
-                                bool exists = false;
-                                foreach (var entry2 in this.PackEntries)
+                                if (project == entry)
                                 {
-                                    if (entry2 == entry)
-                                    {
-                                        exists = true;
-                                        break;
-                                    }
+                                    exists = true;
+                                    break;
                                 }
-                                if (!exists)
-                                {
-                                    this.PackEntries.Add(entry);
-                                }
+                            }
+                            if (!exists)
+                            {
+                                this.PackStatus.Projects.Add(entry);
                             }
                         }
                     }
@@ -139,30 +148,35 @@ namespace Honoo.MangaPack.ViewModels
             }
         }
 
-        private async Task Unpack()
+        private void Unpack()
         {
-            if (this.Unpacking)
+            if (this.UnpackStatus.Running)
             {
-                _unpackAbort = false;
+                this.UnpackStatus.Abort = false;
             }
             else
             {
-                if (this.UnpackEntries.Count > 0)
+                if (this.UnpackStatus.Projects.Count > 0)
                 {
-                    _unpackAbort = false;
-                    this.Unpacking = true;
-                    this.UnpackLog.Clear();
-                    await Task.Run(() =>
+                    this.UnpackStatus.Abort = false;
+                    this.UnpackStatus.Running = true;
+                    this.UnpackStatus.Log.Clear();
+                    this.UnpackStatus.HasError = false;
+                    Task.Run(() =>
                     {
-                        int total = this.UnpackEntries.Count;
-                        for (int i = this.UnpackEntries.Count - 1; i >= 0; i--)
+                        int total = this.UnpackStatus.Projects.Count;
+                        double num = 0;
+                        Settings settings = Common.Settings.Clone();
+                        for (int i = this.UnpackStatus.Projects.Count - 1; i >= 0; i--)
                         {
-                            if (!_unpackAbort)
+                            if (!this.UnpackStatus.Abort)
                             {
-                                int p = (int)Math.Floor((i + 1d) / total * 100);
+                                num++;
+                                int p = (int)Math.Floor(num / total * 100);
                                 WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "UnpackProgress");
-                                if (!Packs.Do(this.UnpackEntries[i], Common.Settings.Clone(), out KeyValuePair<string, bool> log))
+                                if (!Unpacks.Do(this.UnpackStatus.Projects[i], settings, out KeyValuePair<string, bool> log))
                                 {
+                                    this.UnpackStatus.HasError = true;
                                     Growl.WarningGlobal(new GrowlInfo
                                     {
                                         ShowCloseButton = false,
@@ -170,47 +184,45 @@ namespace Honoo.MangaPack.ViewModels
                                         Message = log.Key
                                     });
                                 }
-                                this.UnpackEntries.RemoveAt(i);
-                                this.UnpackLog.Add(log);
+                                this.UnpackStatus.Projects.RemoveAt(i);
+                                this.UnpackStatus.Log.Add(log);
                             }
                         }
+                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "UnpackProgress");
+                        this.UnpackStatus.Running = false;
                     });
-                    this.Unpacking = false;
                 }
             }
         }
 
         private void UnpackClear()
         {
-            this.UnpackEntries.Clear();
+            this.UnpackStatus.Projects.Clear();
         }
 
         private void UnpackDrop(DragEventArgs? e)
         {
-            if (!this.Unpacking)
+            if (e != null)
             {
-                if (e != null)
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
-                    if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                    string[] entries = (string[])e.Data.GetData(DataFormats.FileDrop);
+                    if (entries.Length > 0)
                     {
-                        string[] entries = (string[])e.Data.GetData(DataFormats.FileDrop);
-                        if (entries.Length > 0)
+                        foreach (var entry in entries)
                         {
-                            foreach (var entry in entries)
+                            bool exists = false;
+                            foreach (var entry2 in this.UnpackStatus.Projects)
                             {
-                                bool exists = false;
-                                foreach (var entry2 in this.UnpackEntries)
+                                if (entry2 == entry)
                                 {
-                                    if (entry2 == entry)
-                                    {
-                                        exists = true;
-                                        break;
-                                    }
+                                    exists = true;
+                                    break;
                                 }
-                                if (!exists)
-                                {
-                                    this.UnpackEntries.Add(entry);
-                                }
+                            }
+                            if (!exists)
+                            {
+                                this.UnpackStatus.Projects.Add(entry);
                             }
                         }
                     }
