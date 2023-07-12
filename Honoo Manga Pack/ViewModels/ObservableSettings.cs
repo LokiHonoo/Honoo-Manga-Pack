@@ -12,10 +12,10 @@ namespace Honoo.MangaPack.ViewModels
             _settings = settings;
         }
 
-        public int PackNamesake
+        public bool PackDelOrigin
         {
-            get => _settings.PackNamesake;
-            set => SetProperty(_settings.PackNamesake, value, _settings, (model, val) => { model.PackNamesake = val; });
+            get => _settings.PackDelOrigin;
+            set => SetProperty(_settings.PackDelOrigin, value, _settings, (model, val) => { model.PackDelOrigin = val; });
         }
 
         public bool PackRemoveNested
@@ -82,6 +82,12 @@ namespace Honoo.MangaPack.ViewModels
         {
             get => _settings.UnpackRemoveNested;
             set => SetProperty(_settings.UnpackRemoveNested, value, _settings, (model, val) => { model.UnpackRemoveNested = val; });
+        }
+
+        public bool UnpackResetName
+        {
+            get => _settings.UnpackResetName;
+            set => SetProperty(_settings.UnpackResetName, value, _settings, (model, val) => { model.UnpackResetName = val; });
         }
 
         public bool UnpackSaveTo

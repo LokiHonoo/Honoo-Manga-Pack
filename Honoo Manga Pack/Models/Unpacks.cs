@@ -41,26 +41,6 @@ namespace Honoo.MangaPack.Models
             return false;
         }
 
-        private static void DelUseless(string path)
-        {
-            string[] dels = Directory.GetFiles(path, "Thumbs.db", System.IO.SearchOption.AllDirectories);
-            if (dels.Length > 0)
-            {
-                foreach (string del in dels)
-                {
-                    File.Delete(del);
-                }
-            }
-            dels = Directory.GetFiles(path, "desktop.ini", System.IO.SearchOption.AllDirectories);
-            if (dels.Length > 0)
-            {
-                foreach (string del in dels)
-                {
-                    File.Delete(del);
-                }
-            }
-        }
-
         private static bool DoMobi(string path, Settings settings, out KeyValuePair<string, bool> log)
         {
             log = new KeyValuePair<string, bool>(path, false);
@@ -128,72 +108,72 @@ namespace Honoo.MangaPack.Models
                 {
                     root = Path.Combine(root, "~Manga Pack");
                 }
-                string title = Path.GetFileNameWithoutExtension(file);
-                string dir = Path.Combine(root, title);
-                int n = 1;
-                while (Directory.Exists(dir))
-                {
-                    dir = Path.Combine(root, $"{title} ({n})");
-                    n++;
-                }
                 try
                 {
-                    Directory.CreateDirectory(dir);
+                    string title = Path.GetFileNameWithoutExtension(file);
+                    string tmp = Path.Combine(root, Path.GetRandomFileName());
+                    string tmpOri = tmp;
+                    Directory.CreateDirectory(tmp);
                     using (IArchive archive = ArchiveFactory.Open(file, _readerOptions))
                     {
-                        archive.WriteToDirectory(dir, _extractionOptions);
+                        archive.WriteToDirectory(tmp, _extractionOptions);
                     }
-                    string dir2 = dir;
-                    string title2 = title;
                     if (settings.UnpackRemoveNested)
                     {
-                        string[] d = Directory.GetDirectories(dir2);
-                        string[] f = Directory.GetFiles(dir2);
+                        string[] d = Directory.GetDirectories(tmp);
+                        string[] f = Directory.GetFiles(tmp);
                         while (d.Length == 1 && f.Length == 0)
                         {
-                            string t = Path.GetFileName(d[0]);
-                            if (t.Length > title2.Length)
+                            tmp = d[0];
+                            if (settings.UnpackResetName)
                             {
-                                title2 = t;
-                            }
-                            dir2 = d[0];
-                            d = Directory.GetDirectories(dir2);
-                            f = Directory.GetFiles(dir2);
-                        }
-                        if (dir2 != dir)
-                        {
-                            if (title2 == title)
-                            {
-                                string dir3 = Path.Combine(root, Path.GetRandomFileName());
-                                Directory.Move(dir2, dir3);
-                                Directory.Delete(dir, true);
-                                Directory.Move(dir3, dir);
-                                DelUseless(dir);
-                            }
-                            else
-                            {
-                                string dir3 = Path.Combine(root, title2);
-                                n = 1;
-                                while (Directory.Exists(dir3))
+                                string title2 = Path.GetFileName(tmp);
+                                if (title2.Length > title.Length)
                                 {
-                                    dir3 = Path.Combine(root, $"{title2} ({n})");
-                                    n++;
+                                    title = title2;
                                 }
-                                Directory.Move(dir2, dir3);
-                                Directory.Delete(dir, true);
-                                DelUseless(dir3);
                             }
+                            d = Directory.GetDirectories(tmp);
+                            f = Directory.GetFiles(tmp);
                         }
                     }
-                    if (settings.UnpackDelOrigin)
+                    string dir = Path.Combine(root, title);
+                    int n = 1;
+                    while (Directory.Exists(dir))
                     {
-                        try
+                        dir = Path.Combine(root, $"{title} ({n})");
+                        n++;
+                    }
+                    Directory.Move(tmp, dir);
+                    if (Directory.Exists(tmpOri))
+                    {
+                        Directory.Delete(tmpOri, true);
+                    }
+                    try
+                    {
+                        string[] dels = Directory.GetFiles(dir, "Thumbs.db", System.IO.SearchOption.AllDirectories);
+                        if (dels.Length > 0)
+                        {
+                            foreach (string del in dels)
+                            {
+                                File.Delete(del);
+                            }
+                        }
+                        dels = Directory.GetFiles(dir, "desktop.ini", System.IO.SearchOption.AllDirectories);
+                        if (dels.Length > 0)
+                        {
+                            foreach (string del in dels)
+                            {
+                                File.Delete(del);
+                            }
+                        }
+                        if (settings.UnpackDelOrigin)
                         {
                             FileSystem.DeleteFile(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
                         }
-                        catch
-                        {
-                        }
+                    }
+                    catch
+                    {
                     }
                     log = new KeyValuePair<string, bool>(path, true);
                     return true;

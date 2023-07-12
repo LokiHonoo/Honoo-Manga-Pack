@@ -23,42 +23,55 @@ namespace Honoo.MangaPack.Models
             {
                 string dir = path;
                 string root = Path.GetDirectoryName(dir)!;
-                if (!string.IsNullOrEmpty(root))
+                if (settings.PackSaveTo)
                 {
-                    if (settings.PackSaveTo)
+                    root = Path.Combine(root, "~Manga Pack");
+                }
+                string title = Path.GetFileName(dir);
+                if (settings.PackSuffixEnd && !string.IsNullOrWhiteSpace(settings.PackSuffixEndValue) && !title.EndsWith(']'))
+                {
+                    title = $"{title} {settings.PackSuffixEndValue}";
+                }
+                if (settings.PackSuffixDiff && !string.IsNullOrWhiteSpace(settings.PackSuffixDiffValue) && title.IndexOf(settings.PackSuffixDiffValue) < 0)
+                {
+                    title = $"{title} {settings.PackSuffixDiffValue}";
+                }
+                int remove = dir.Length;
+                if (settings.PackRemoveNested)
+                {
+                    string[] d = Directory.GetDirectories(dir);
+                    string[] f = Directory.GetFiles(dir);
+                    while (d.Length == 1 && f.Length == 0)
                     {
-                        root = Path.Combine(root, "~Manga Pack");
+                        dir = d[0];
+                        remove = dir.Length;
+                        d = Directory.GetDirectories(dir);
+                        f = Directory.GetFiles(dir);
                     }
-                    string title = Path.GetFileName(dir);
-                    if (settings.PackSuffixEnd && !string.IsNullOrWhiteSpace(settings.PackSuffixEndValue) && !title.EndsWith(']'))
+                }
+                var files = new List<string>(Directory.GetFiles(dir, "*.*", System.IO.SearchOption.AllDirectories));
+                for (int i = files.Count - 1; i >= 0; i--)
+                {
+                    string file = files[i];
+                    if (file.EndsWith("Thumbs.db", StringComparison.OrdinalIgnoreCase) || file.EndsWith("desktop.ini", StringComparison.OrdinalIgnoreCase))
                     {
-                        title = $"{title} {settings.PackSuffixEndValue}";
+                        files.RemoveAt(i);
                     }
-                    if (settings.PackSuffixDiff && !string.IsNullOrWhiteSpace(settings.PackSuffixDiffValue) && title.IndexOf(settings.PackSuffixDiffValue) < 0)
+                }
+                if (files.Count > 0)
+                {
+                    try
                     {
-                        title = $"{title} {settings.PackSuffixDiffValue}";
-                    }
-                    int remove = dir.Length;
-                    if (settings.PackRemoveNested)
-                    {
-                        string[] d = Directory.GetDirectories(dir);
-                        string[] f = Directory.GetFiles(dir);
-                        while (d.Length == 1 && f.Length == 0)
+                        string zip = Path.Combine(root, $"{title}.zip");
+                        int n = 1;
+                        while (File.Exists(zip))
                         {
-                            dir = d[0];
-                            remove = dir.Length;
-                            d = Directory.GetDirectories(dir);
-                            f = Directory.GetFiles(dir);
+                            zip = Path.Combine(root, $"{title} ({n}).zip");
+                            n++;
                         }
-                    }
-                    string[] files = Directory.GetFiles(dir, "*.*", System.IO.SearchOption.AllDirectories);
-                    if (files.Length > 0)
-                    {
-                        using var archive = ZipArchive.Create();
-                        for (int i = 0; i < files.Length; i++)
+                        using (var archive = ZipArchive.Create())
                         {
-                            string file = files[i];
-                            if (!file.EndsWith("Thumbs.db", StringComparison.OrdinalIgnoreCase))
+                            foreach (var file in files)
                             {
                                 string key = file[remove..];
                                 if (settings.PackRoot)
@@ -67,34 +80,23 @@ namespace Honoo.MangaPack.Models
                                 }
                                 archive.AddEntry(key, file);
                             }
-                        }
-                        if (archive.Entries.Count > 0)
-                        {
-                            string zip = Path.Combine(root, $"{title}.zip");
-                            if (settings.PackNamesake == 1)
-                            {
-                                int n = 1;
-                                while (File.Exists(zip))
-                                {
-                                    zip = Path.Combine(root, $"{title} ({n}).zip");
-                                    n++;
-                                }
-                            }
-                            else
-                            {
-                                if (File.Exists(zip))
-                                {
-                                    FileSystem.DeleteFile(zip, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
-                                }
-                            }
-                            if (!Directory.Exists(root))
-                            {
-                                Directory.CreateDirectory(root);
-                            }
                             archive.SaveTo(zip, _writerOptions);
-                            log = new KeyValuePair<string, bool>(path, true);
-                            return true;
                         }
+                        if (settings.PackDelOrigin)
+                        {
+                            try
+                            {
+                                FileSystem.DeleteDirectory(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                            }
+                            catch
+                            {
+                            }
+                        }
+                        log = new KeyValuePair<string, bool>(path, true);
+                        return true;
+                    }
+                    catch
+                    {
                     }
                 }
             }

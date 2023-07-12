@@ -70,10 +70,10 @@
                             VerticalAlignment="Bottom" />
                 </Grid>
             </Border>
-            <Button Grid.Column="1" Content="清 除" Command="{Binding UnpackClearCommand}" Margin="5,10,0,10" Width="80"></Button>
+            <Button Grid.Column="1" Content="清 除" Command="{Binding UnpackClearCommand}" Margin="5,10,0,5" Width="80"></Button>
             <ctl:InhibitToggleButton Grid.Row="1" Grid.Column="1" Command="{Binding UnpackCommand}"
                     Style="{StaticResource ToggleButtonLoadingPrimary}"
-                    IsChecked="{Binding UnpackStatus.Running, Mode=OneWay}" Width="80" Margin="5,10,0,10">
+                    IsChecked="{Binding UnpackStatus.Running, Mode=OneWay}" Width="80" Margin="5,5,0,10">
                 <ctl:InhibitToggleButton.Content>
                     <Binding Path="UnpackStatus.Running" Mode="OneWay">
                         <Binding.Converter>
@@ -114,10 +114,10 @@
                             VerticalAlignment="Bottom" />
                 </Grid>
             </Border>
-            <Button Grid.Column="1" Command="{Binding PackClearCommand}" Content="清 除" Margin="5,10,0,10" Width="80"></Button>
+            <Button Grid.Column="1" Command="{Binding PackClearCommand}" Content="清 除" Margin="5,10,0,5" Width="80"></Button>
             <ctl:InhibitToggleButton Grid.Row="1" Grid.Column="1" Command="{Binding PackCommand}"
                     Style="{StaticResource ToggleButtonLoadingPrimary}"
-                    IsChecked="{Binding PackStatus.Running, Mode=OneWay}" Width="80" Margin="5,10,0,10">
+                    IsChecked="{Binding PackStatus.Running, Mode=OneWay}" Width="80" Margin="5,5,0,10">
                 <ctl:InhibitToggleButton.Content>
                     <Binding Path="PackStatus.Running" Mode="OneWay">
                         <Binding.Converter>
@@ -128,57 +128,59 @@
                 </ctl:InhibitToggleButton.Content>
             </ctl:InhibitToggleButton>
         </Grid>
-        <Border Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="6" Margin="0,10,0,0">
-            <Border.Background>
+        <Expander Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0" d:IsExpanded="True" Opacity="0.9"
+                IsExpanded="{Binding Settings.ShowSettings, Mode=TwoWay}">
+            <Expander.Background>
                 <LinearGradientBrush EndPoint="1,1" StartPoint="0,0">
                     <GradientStop Color="#FFD6EDC4" />
                     <GradientStop Color="#FFC5D9F9" Offset="1" />
                 </LinearGradientBrush>
-            </Border.Background>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10,5,10,5">
-                <ToggleButton hc:IconElement.Geometry="{StaticResource DownGeometry}"
-                        hc:IconSwitchElement.GeometrySelected="{StaticResource UpGeometry}"
-                        Style="{StaticResource ToggleButtonIconTransparent}"
-                        IsChecked="{Binding Settings.ShowSettings, Mode=TwoWay}" />
-            </StackPanel>
-        </Border>
-        <GroupBox Header="解包设置"
-                Visibility="{Binding Settings.ShowSettings, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                Grid.Row="2" Grid.Column="0" Margin="0,10,5,0" hc:BorderElement.CornerRadius="6"
-                Style="{StaticResource GroupBoxTab}">
-            <StackPanel Margin="10" Background="White">
-                <CheckBox Content="移除嵌套文件夹" IsChecked="{Binding Settings.UnpackRemoveNested, Mode=TwoWay}"
-                        Margin="10,10,10,0" />
-
-                <CheckBox Content="保存到 “/~Manga Pack/”" IsChecked="{Binding Settings.UnpackSaveTo, Mode=TwoWay}"
-                        Margin="10,10,10,0" />
-                <CheckBox Content="源文件移入回收站" IsChecked="{Binding Settings.UnpackDelOrigin, Mode=TwoWay}"
-                        Margin="10,10,10,10" />
-            </StackPanel>
-        </GroupBox>
-        <GroupBox Header="打包设置"
-                Visibility="{Binding Settings.ShowSettings, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                Grid.Row="2" Grid.Column="1" Margin="5,10,0,0" hc:BorderElement.CornerRadius="6"
-                Style="{StaticResource GroupBoxTab}">
-            <StackPanel Margin="10" Background="White">
-                <CheckBox Content="如果不是 “]” 结尾则添加后缀" IsChecked="{Binding Settings.PackSuffixEnd, Mode=TwoWay}"
-                        Margin="10,10,10,0" />
-                <TextBox Margin="30,10,10,0" Text="{Binding Settings.PackSuffixEndValue, Mode=TwoWay}" />
-                <CheckBox Content="如果没有同名后缀则添加后缀" IsChecked="{Binding Settings.PackSuffixDiff, Mode=TwoWay}"
-                        Margin="10,10,10,0" />
-                <TextBox Margin="30,10,10,0" Text="{Binding Settings.PackSuffixDiffValue, Mode=TwoWay}" />
-                <CheckBox Content="包括拖放文件夹" IsChecked="{Binding Settings.PackRoot, Mode=TwoWay}" Margin="10,10,10,0" />
-                <CheckBox Content="移除嵌套文件夹" IsChecked="{Binding Settings.PackRemoveNested, Mode=TwoWay}"
-                        Margin="10,10,10,0" />
-                <CheckBox Content="保存到 “/~Manga Pack/”" IsChecked="{Binding Settings.PackSaveTo, Mode=TwoWay}"
-                        Margin="10,10,10,0" />
-                <TextBlock Text="目标同名" Margin="10,10,10,0" />
-                <ComboBox d:SelectedIndex="1" SelectedIndex="{Binding Settings.PackNamesake, Mode=TwoWay}"
-                        Margin="30,10,10,10">
-                    <ComboBoxItem Content="旧文件移入回收站" />
-                    <ComboBoxItem Content="新文件添加后缀 “(N)”" />
-                </ComboBox>
-            </StackPanel>
-        </GroupBox>
+            </Expander.Background>
+            <Border BorderThickness="1,0,1,1" BorderBrush="{DynamicResource BorderBrush}"
+                    Background="{DynamicResource RegionBrush}" CornerRadius="0,0,4,4">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <GroupBox Header="解包设置"
+                            Visibility="{Binding Settings.ShowSettings, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Margin="10,10,5,10" hc:BorderElement.CornerRadius="6" Style="{StaticResource GroupBoxTab}">
+                        <StackPanel Margin="10" Background="White">
+                            <CheckBox Content="保存到 “/~Manga Pack/”"
+                                    IsChecked="{Binding Settings.UnpackSaveTo, Mode=TwoWay}" Margin="10,10,10,0" />
+                            <CheckBox Content="移除嵌套文件夹" IsChecked="{Binding Settings.UnpackRemoveNested, Mode=TwoWay}"
+                                    x:Name="UnpackRemoveNestedCheckBox" Margin="10,10,10,0" />
+                            <CheckBox Content="将最长的名称作为文件夹名" IsChecked="{Binding Settings.UnpackResetName, Mode=TwoWay}"
+                                    IsEnabled="{Binding ElementName=UnpackRemoveNestedCheckBox, Path=IsChecked}"
+                                    Margin="30,10,10,0" />
+                            <CheckBox Content="源文件移入回收站" IsChecked="{Binding Settings.UnpackDelOrigin, Mode=TwoWay}"
+                                    Margin="10,10,10,10" />
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="打包设置"
+                            Visibility="{Binding Settings.ShowSettings, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Grid.Column="1" Margin="5,10,10,10" hc:BorderElement.CornerRadius="6"
+                            Style="{StaticResource GroupBoxTab}">
+                        <StackPanel Margin="10" Background="White">
+                            <CheckBox Content="保存到 “/~Manga Pack/”"
+                                    IsChecked="{Binding Settings.PackSaveTo, Mode=TwoWay}" Margin="10,10,10,0" />
+                            <CheckBox Content="如果不是 “]” 结尾则添加后缀"
+                                    IsChecked="{Binding Settings.PackSuffixEnd, Mode=TwoWay}" Margin="10,10,10,0" />
+                            <TextBox Margin="30,10,10,0" Text="{Binding Settings.PackSuffixEndValue, Mode=TwoWay}" />
+                            <CheckBox Content="如果没有同名后缀则添加后缀" IsChecked="{Binding Settings.PackSuffixDiff, Mode=TwoWay}"
+                                    Margin="10,10,10,0" />
+                            <TextBox Margin="30,10,10,0" Text="{Binding Settings.PackSuffixDiffValue, Mode=TwoWay}" />
+                            <CheckBox Content="包括拖放文件夹" IsChecked="{Binding Settings.PackRoot, Mode=TwoWay}"
+                                    Margin="10,10,10,0" />
+                            <CheckBox Content="移除嵌套文件夹" IsChecked="{Binding Settings.PackRemoveNested, Mode=TwoWay}"
+                                    Margin="10,10,10,0" />
+                            <CheckBox Content="源文件夹移入回收站" IsChecked="{Binding Settings.PackDelOrigin, Mode=TwoWay}"
+                                    Margin="10,10,10,10" />
+                        </StackPanel>
+                    </GroupBox>
+                </Grid>
+            </Border>
+        </Expander>
     </Grid>
 </hc:Window>

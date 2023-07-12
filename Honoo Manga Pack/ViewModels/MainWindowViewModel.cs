@@ -14,17 +14,6 @@ namespace Honoo.MangaPack.ViewModels
 {
     public sealed class MainWindowViewModel : ObservableObject
     {
-        //  private bool _packAbort = false;
-        //  private bool _packing;
-        //  private int _packingProgress;
-        //  private ObservableCollection<KeyValuePair<string, bool>> _packLog = new();
-        // private bool _unpackAbort = false;
-        // private bool _unpacking;
-        // private int _unpackingProgress;
-        // private ObservableCollection<KeyValuePair<string, bool>> _unpackLog = new();
-        // private ObservableCollection<string> _unpackEntries = new();
-        //  private ObservableCollection<string> _packEntries = new();
-
         private ObservableWorkStatus _packStatus = new();
         private ObservableSettings _settings = new(Common.Settings);
         private ObservableWorkStatus _unpackStatus = new();
@@ -57,20 +46,12 @@ namespace Honoo.MangaPack.ViewModels
         public IRelayCommand UnpackCommand { get; set; }
         public IRelayCommand UnpackDropCommand { get; set; }
         public ObservableWorkStatus UnpackStatus { get => _unpackStatus; set => SetProperty(ref _unpackStatus, value); }
-        // public ObservableCollection<string> UnpackEntries { get => _unpackEntries; set => SetProperty(ref _unpackEntries, value); }
-        // public ObservableCollection<string> PackEntries { get => _packEntries; set => SetProperty(ref _packEntries, value); }
-        // public bool Packing { get => _packing; set => SetProperty(ref _packing, value); }
-        //  public int PackingProgress { get => _packingProgress; set => SetProperty(ref _packingProgress, value); }
-        //  public ObservableCollection<KeyValuePair<string, bool>> PackLog { get => _packLog; set => SetProperty(ref _packLog, value); }
-        //  public bool Unpacking { get => _unpacking; set => SetProperty(ref _unpacking, value); }
-        // public int UnpackingProgress { get => _unpackingProgress; set => SetProperty(ref _unpackingProgress, value); }
-        // public ObservableCollection<KeyValuePair<string, bool>> UnpackLog { get => _unpackLog; set => SetProperty(ref _unpackLog, value); }
 
         private void Pack()
         {
             if (this.PackStatus.Running)
             {
-                this.PackStatus.Abort = false;
+                this.PackStatus.Abort = true;
             }
             else
             {
@@ -152,7 +133,7 @@ namespace Honoo.MangaPack.ViewModels
         {
             if (this.UnpackStatus.Running)
             {
-                this.UnpackStatus.Abort = false;
+                this.UnpackStatus.Abort = true; ;
             }
             else
             {
