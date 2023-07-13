@@ -7,6 +7,7 @@ using HandyControl.Data;
 using Honoo.MangaPack.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -87,6 +88,8 @@ namespace Honoo.MangaPack.ViewModels
                                this.PackStatus.Log.Add(log);
                            }
                        }
+                       WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(120), "PackProgress");
+                       Thread.Sleep(200);
                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "PackProgress");
                        this.PackStatus.Running = false;
                    });
@@ -169,6 +172,8 @@ namespace Honoo.MangaPack.ViewModels
                                 this.UnpackStatus.Log.Add(log);
                             }
                         }
+                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(120), "UnpackProgress");
+                        Thread.Sleep(200);
                         WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "UnpackProgress");
                         this.UnpackStatus.Running = false;
                     });

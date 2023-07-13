@@ -49,27 +49,25 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Border Grid.RowSpan="2" CornerRadius="6" Background="#FFD6EDC4" AllowDrop="True">
+            <Grid Grid.RowSpan="2" Background="#FFD6EDC4" AllowDrop="True">
                 <b:Interaction.Triggers>
                     <b:EventTrigger EventName="Drop">
                         <b:InvokeCommandAction Command="{Binding UnpackDropCommand}" PassEventArgsToCommand="True" />
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
-                <Grid Margin="10,10,10,10">
+                <ProgressBar Value="{Binding UnpackStatus.Progress, Mode=OneWay}" d:Value="50" Foreground="#FFB3D896"
+                        Maximum="120" Style="{StaticResource ProgressBarFlat4ProgressButton}" />
+                <Grid Margin="8">
                     <TextBlock Text="拖放压缩文件/PDF..." HorizontalAlignment="Center" VerticalAlignment="Top" />
                     <TextBlock d:Text="0" Text="{Binding UnpackStatus.Projects.Count, Mode=OneWay}"
                             FontFamily="{StaticResource Font.LESLIE}" FontSize="36" HorizontalAlignment="Center"
                             VerticalAlignment="Center" />
-                    <hc:WaveProgressBar VerticalAlignment="Bottom" HorizontalAlignment="Right" ShowText="False"
-                            Value="{Binding UnpackStatus.Progress, Mode=OneWay}"
-                            Visibility="{Binding UnpackStatus.Running, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            Width="30" Height="30" d:Value="50" />
                     <Button hc:IconElement.Geometry="{StaticResource WarningGeometry}"
                             Visibility="{Binding UnpackStatus.HasError, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Style="{DynamicResource ButtonDashedWarning}" HorizontalAlignment="Left"
                             VerticalAlignment="Bottom" />
                 </Grid>
-            </Border>
+            </Grid>
             <Button Grid.Column="1" Content="清 除" Command="{Binding UnpackClearCommand}" Margin="5,10,0,5" Width="80"></Button>
             <ctl:InhibitToggleButton Grid.Row="1" Grid.Column="1" Command="{Binding UnpackCommand}"
                     Style="{StaticResource ToggleButtonLoadingPrimary}"
@@ -93,27 +91,25 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Border Grid.RowSpan="2" CornerRadius="6" Background="#FFC5D9F9" AllowDrop="True">
+            <Grid Grid.RowSpan="2" Background="#FFC5D9F9" AllowDrop="True">
                 <b:Interaction.Triggers>
                     <b:EventTrigger EventName="Drop">
                         <b:InvokeCommandAction Command="{Binding PackDropCommand}" PassEventArgsToCommand="True" />
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
-                <Grid Margin="10,10,10,10">
+                <ProgressBar Value="{Binding PackStatus.Progress, Mode=OneWay}" d:Value="50" Foreground="#FF81A9EA"
+                        Maximum="120" Style="{StaticResource ProgressBarFlat4ProgressButton}" />
+                <Grid Margin="8">
                     <TextBlock Text="拖放文件夹..." HorizontalAlignment="Center" VerticalAlignment="Top" />
                     <TextBlock d:Text="0" Text="{Binding PackStatus.Projects.Count, Mode=OneWay}"
                             FontFamily="{StaticResource Font.LESLIE}" FontSize="36" HorizontalAlignment="Center"
                             VerticalAlignment="Center" />
-                    <hc:WaveProgressBar VerticalAlignment="Bottom" HorizontalAlignment="Right" ShowText="False"
-                            Value="{Binding PackStatus.Progress, Mode=OneWay}"
-                            Visibility="{Binding PackStatus.Running, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            Width="30" Height="30" d:Value="50" />
                     <Button hc:IconElement.Geometry="{StaticResource WarningGeometry}"
                             Visibility="{Binding PackStatus.HasError, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Style="{DynamicResource ButtonDashedWarning}" HorizontalAlignment="Left"
                             VerticalAlignment="Bottom" />
                 </Grid>
-            </Border>
+            </Grid>
             <Button Grid.Column="1" Command="{Binding PackClearCommand}" Content="清 除" Margin="5,10,0,5" Width="80"></Button>
             <ctl:InhibitToggleButton Grid.Row="1" Grid.Column="1" Command="{Binding PackCommand}"
                     Style="{StaticResource ToggleButtonLoadingPrimary}"
@@ -152,7 +148,7 @@
                             <CheckBox Content="移除嵌套文件夹" IsChecked="{Binding Settings.UnpackRemoveNested, Mode=TwoWay}"
                                     x:Name="UnpackRemoveNestedCheckBox" Margin="10,10,10,0" />
                             <CheckBox Content="将最长的名称作为文件夹名" IsChecked="{Binding Settings.UnpackResetName, Mode=TwoWay}"
-                                    IsEnabled="{Binding ElementName=UnpackRemoveNestedCheckBox, Path=IsChecked}"
+                                    IsEnabled="{Binding ElementName=UnpackRemoveNestedCheckBox, Path=IsChecked, Mode=OneWay}"
                                     Margin="30,10,10,0" />
                             <CheckBox Content="源文件移入回收站" IsChecked="{Binding Settings.UnpackDelOrigin, Mode=TwoWay}"
                                     Margin="10,10,10,10" />
