@@ -1,10 +1,8 @@
-﻿using System.Windows;
+﻿using Honoo.MangaPack.Models;
+using System.Windows;
 
 namespace Honoo.MangaPack
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
         public App()
@@ -14,7 +12,7 @@ namespace Honoo.MangaPack
 
         private void App_Exit(object sender, ExitEventArgs e)
         {
-            Common.Settings.Save();
+            ModelLocator.ObservableSettings.Save();
         }
 
         private void App_Startup(object sender, StartupEventArgs e)
@@ -25,7 +23,7 @@ namespace Honoo.MangaPack
             }
             else
             {
-                Common.Settings.Load();
+                ModelLocator.ObservableSettings.Load();
                 this.Exit += App_Exit;
             }
         }

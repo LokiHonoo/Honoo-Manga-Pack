@@ -17,7 +17,7 @@ namespace Honoo.MangaPack.Models
             ArchiveEncoding = new ArchiveEncoding(Encoding.UTF8, Encoding.UTF8)
         };
 
-        internal static bool Do(string path, Settings settings, out KeyValuePair<string, bool> log)
+        internal static bool Do(string path, ObservableSettings settings, out KeyValuePair<string, bool> log)
         {
             if (Directory.Exists(path))
             {

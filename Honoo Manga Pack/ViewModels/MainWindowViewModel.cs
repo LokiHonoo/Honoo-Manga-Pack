@@ -1,108 +1,47 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
-using HandyControl.Controls;
-using HandyControl.Data;
 using Honoo.MangaPack.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Honoo.MangaPack.ViewModels
 {
     public sealed class MainWindowViewModel : ObservableObject
     {
         private ObservableWorkStatus _packStatus = new();
-        private ObservableSettings _settings = new(Common.Settings);
+        private ObservableSettings _settings = ModelLocator.ObservableSettings;
         private ObservableWorkStatus _unpackStatus = new();
 
         public MainWindowViewModel()
         {
-            this.PackDropCommand = new RelayCommand<DragEventArgs>(PackDrop, (e) => { return !this.PackStatus.Running; });
-            this.PackClearCommand = new RelayCommand(PackClear, () => { return !this.PackStatus.Running; });
-            this.PackCommand = new RelayCommand(Pack);
-            this.UnpackDropCommand = new RelayCommand<DragEventArgs>(UnpackDrop, (e) => { return !this.UnpackStatus.Running; });
-            this.UnpackClearCommand = new RelayCommand(UnpackClear, () => { return !this.UnpackStatus.Running; });
-            this.UnpackCommand = new RelayCommand(Unpack);
-
-            WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "PackProgress", (recipient, messenger) =>
-            {
-                this.PackStatus.Progress = messenger.Value;
-            });
-            WeakReferenceMessenger.Default.Register<ValueChangedMessage<int>, string>(this, "UnpackProgress", (recipient, messenger) =>
-            {
-                this.UnpackStatus.Progress = messenger.Value;
-            });
+            this.PackDropCommand = new RelayCommand<DragEventArgs>(PackDropExecute, (e) => { return !this.PackStatus.Running; });
+            this.PackClearCommand = new RelayCommand(PackClearExecute, () => { return !this.PackStatus.Running; });
+            this.PackCommand = new RelayCommand(PackExecute);
+            this.UnpackDropCommand = new RelayCommand<DragEventArgs>(UnpackDropExecute, (e) => { return !this.UnpackStatus.Running; });
+            this.UnpackClearCommand = new RelayCommand(UnpackClearExecute, () => { return !this.UnpackStatus.Running; });
+            this.UnpackCommand = new RelayCommand(UnpackExecute);
         }
 
-        public IRelayCommand PackClearCommand { get; set; }
-        public IRelayCommand PackCommand { get; set; }
-        public IRelayCommand PackDropCommand { get; set; }
+        public ICommand PackClearCommand { get; set; }
+        public ICommand PackCommand { get; set; }
+        public ICommand PackDropCommand { get; set; }
         public ObservableWorkStatus PackStatus { get => _packStatus; set => SetProperty(ref _packStatus, value); }
         public ObservableSettings Settings { get => _settings; set => SetProperty(ref _settings, value); }
-        public IRelayCommand UnpackClearCommand { get; set; }
-        public IRelayCommand UnpackCommand { get; set; }
-        public IRelayCommand UnpackDropCommand { get; set; }
+        public ICommand UnpackClearCommand { get; set; }
+        public ICommand UnpackCommand { get; set; }
+        public ICommand UnpackDropCommand { get; set; }
         public ObservableWorkStatus UnpackStatus { get => _unpackStatus; set => SetProperty(ref _unpackStatus, value); }
 
-        private void Pack()
-        {
-            if (this.PackStatus.Running)
-            {
-                this.PackStatus.Abort = true;
-            }
-            else
-            {
-                if (this.PackStatus.Projects.Count > 0)
-                {
-                    this.PackStatus.Abort = false;
-                    this.PackStatus.Running = true;
-                    this.PackStatus.Log.Clear();
-                    this.PackStatus.HasError = false;
-                    Task.Run(() =>
-                   {
-                       int total = this.PackStatus.Projects.Count;
-                       double num = 0;
-                       Settings settings = Common.Settings.Clone();
-                       for (int i = this.PackStatus.Projects.Count - 1; i >= 0; i--)
-                       {
-                           if (!this.PackStatus.Abort)
-                           {
-                               num++;
-                               int p = (int)Math.Floor(num / total * 100);
-                               WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "PackProgress");
-                               if (!Packs.Do(this.PackStatus.Projects[i], settings, out KeyValuePair<string, bool> log))
-                               {
-                                   this.PackStatus.HasError = true;
-                                   Growl.WarningGlobal(new GrowlInfo
-                                   {
-                                       ShowCloseButton = false,
-                                       ShowDateTime = false,
-                                       Message = log.Key
-                                   });
-                               }
-                               this.PackStatus.Projects.RemoveAt(i);
-                               this.PackStatus.Log.Add(log);
-                           }
-                       }
-                       WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(110), "PackProgress");
-                       Thread.Sleep(500);
-                       WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "PackProgress");
-                       this.PackStatus.Running = false;
-                   });
-                }
-            }
-        }
-
-        private void PackClear()
+        private void PackClearExecute()
         {
             this.PackStatus.Projects.Clear();
         }
 
-        private void PackDrop(DragEventArgs? e)
+        private void PackDropExecute(DragEventArgs? e)
         {
             if (e != null)
             {
@@ -127,66 +66,63 @@ namespace Honoo.MangaPack.ViewModels
                                 this.PackStatus.Projects.Add(entry);
                             }
                         }
+                        if (this.Settings.ExecuteAtDrop && this.PackStatus.Projects.Count > 0)
+                        {
+                            this.PackCommand.Execute(null);
+                        }
                     }
                 }
             }
         }
 
-        private void Unpack()
+        private void PackExecute()
         {
-            if (this.UnpackStatus.Running)
+            if (this.PackStatus.Running)
             {
-                this.UnpackStatus.Abort = true; ;
+                this.PackStatus.Abort = true;
             }
             else
             {
-                if (this.UnpackStatus.Projects.Count > 0)
+                if (this.PackStatus.Projects.Count > 0)
                 {
-                    this.UnpackStatus.Abort = false;
-                    this.UnpackStatus.Running = true;
-                    this.UnpackStatus.Log.Clear();
-                    this.UnpackStatus.HasError = false;
+                    this.PackStatus.Abort = false;
+                    this.PackStatus.Running = true;
+                    this.PackStatus.Log.Clear();
+                    this.PackStatus.HasError = false;
                     Task.Run(() =>
                     {
-                        int total = this.UnpackStatus.Projects.Count;
+                        int total = this.PackStatus.Projects.Count;
                         double num = 0;
-                        Settings settings = Common.Settings.Clone();
-                        for (int i = this.UnpackStatus.Projects.Count - 1; i >= 0; i--)
+                        ObservableSettings settings = this.Settings.Clone();
+                        for (int i = this.PackStatus.Projects.Count - 1; i >= 0; i--)
                         {
-                            if (!this.UnpackStatus.Abort)
+                            if (!this.PackStatus.Abort)
                             {
                                 num++;
-                                int p = (int)Math.Floor(num / total * 100);
-                                WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(p), "UnpackProgress");
-                                if (!Unpacks.Do(this.UnpackStatus.Projects[i], settings, out KeyValuePair<string, bool> log))
+                                this.PackStatus.Progress = Math.Floor(num / total * 100);
+                                if (!Packs.Do(this.PackStatus.Projects[i], settings, out KeyValuePair<string, bool> log))
                                 {
-                                    this.UnpackStatus.HasError = true;
-                                    Growl.WarningGlobal(new GrowlInfo
-                                    {
-                                        ShowCloseButton = false,
-                                        ShowDateTime = false,
-                                        Message = log.Key
-                                    });
+                                    this.PackStatus.HasError = true;
                                 }
-                                this.UnpackStatus.Projects.RemoveAt(i);
-                                this.UnpackStatus.Log.Add(log);
+                                this.PackStatus.Projects.RemoveAt(i);
+                                this.PackStatus.Log.Add(log);
                             }
                         }
-                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(110), "UnpackProgress");
+                        this.PackStatus.Progress = 110;
                         Thread.Sleep(500);
-                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "UnpackProgress");
-                        this.UnpackStatus.Running = false;
+                        this.PackStatus.Progress = 0;
+                        this.PackStatus.Running = false;
                     });
                 }
             }
         }
 
-        private void UnpackClear()
+        private void UnpackClearExecute()
         {
             this.UnpackStatus.Projects.Clear();
         }
 
-        private void UnpackDrop(DragEventArgs? e)
+        private void UnpackDropExecute(DragEventArgs? e)
         {
             if (e != null)
             {
@@ -211,7 +147,53 @@ namespace Honoo.MangaPack.ViewModels
                                 this.UnpackStatus.Projects.Add(entry);
                             }
                         }
+                        if (this.Settings.ExecuteAtDrop && this.UnpackStatus.Projects.Count > 0)
+                        {
+                            this.UnpackCommand.Execute(null);
+                        }
                     }
+                }
+            }
+        }
+
+        private void UnpackExecute()
+        {
+            if (this.UnpackStatus.Running)
+            {
+                this.UnpackStatus.Abort = true; ;
+            }
+            else
+            {
+                if (this.UnpackStatus.Projects.Count > 0)
+                {
+                    this.UnpackStatus.Abort = false;
+                    this.UnpackStatus.Running = true;
+                    this.UnpackStatus.Log.Clear();
+                    this.UnpackStatus.HasError = false;
+                    Task.Run(() =>
+                    {
+                        int total = this.UnpackStatus.Projects.Count;
+                        double num = 0;
+                        ObservableSettings settings = this.Settings.Clone();
+                        for (int i = this.UnpackStatus.Projects.Count - 1; i >= 0; i--)
+                        {
+                            if (!this.UnpackStatus.Abort)
+                            {
+                                num++;
+                                this.UnpackStatus.Progress = Math.Floor(num / total * 100);
+                                if (!Unpacks.Do(this.UnpackStatus.Projects[i], settings, out KeyValuePair<string, bool> log))
+                                {
+                                    this.UnpackStatus.HasError = true;
+                                }
+                                this.UnpackStatus.Projects.RemoveAt(i);
+                                this.UnpackStatus.Log.Add(log);
+                            }
+                        }
+                        this.UnpackStatus.Progress = 110;
+                        Thread.Sleep(500);
+                        this.UnpackStatus.Progress = 0;
+                        this.UnpackStatus.Running = false;
+                    });
                 }
             }
         }

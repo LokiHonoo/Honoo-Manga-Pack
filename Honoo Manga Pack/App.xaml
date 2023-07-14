@@ -1,17 +1,17 @@
-﻿<Application x:Class="Honoo.MangaPack.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:hc="https://handyorg.github.io/handycontrol"
-             StartupUri="MainWindow.xaml">
+﻿<Application
+    x:Class="Honoo.MangaPack.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!--<ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />-->
-                <hc:ThemeResources />
-                <hc:Theme Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Themes/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Themes/Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Themes/ToggleButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Themes/ProgressBar.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <FontFamily x:Key="Font.LESLIE">pack://application:,,,/Assets/Fonts/#LESLIE</FontFamily>
+            <FontFamily x:Key="LESLIEFont">pack://application:,,,/Resources/#LESLIE</FontFamily>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

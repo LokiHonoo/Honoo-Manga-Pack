@@ -24,7 +24,7 @@ namespace Honoo.MangaPack.Models
             LookForHeader = true
         };
 
-        internal static bool Do(string path, Settings settings, out KeyValuePair<string, bool> log)
+        internal static bool Do(string path, ObservableSettings settings, out KeyValuePair<string, bool> log)
         {
             if (File.Exists(path))
             {
@@ -41,13 +41,13 @@ namespace Honoo.MangaPack.Models
             return false;
         }
 
-        private static bool DoMobi(string path, Settings settings, out KeyValuePair<string, bool> log)
+        private static bool DoMobi(string path, ObservableSettings settings, out KeyValuePair<string, bool> log)
         {
             log = new KeyValuePair<string, bool>(path, false);
             return false;
         }
 
-        private static bool DoPdf(string path, Settings settings, out KeyValuePair<string, bool> log)
+        private static bool DoPdf(string path, ObservableSettings settings, out KeyValuePair<string, bool> log)
         {
             if (File.Exists(path))
             {
@@ -98,7 +98,7 @@ namespace Honoo.MangaPack.Models
             return false;
         }
 
-        private static bool DoZip(string path, Settings settings, out KeyValuePair<string, bool> log)
+        private static bool DoZip(string path, ObservableSettings settings, out KeyValuePair<string, bool> log)
         {
             if (File.Exists(path))
             {
