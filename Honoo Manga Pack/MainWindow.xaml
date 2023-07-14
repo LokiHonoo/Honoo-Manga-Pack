@@ -56,7 +56,7 @@
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
                 <ProgressBar Value="{Binding UnpackStatus.Progress, Mode=OneWay}" d:Value="50" Foreground="#FFB3D896"
-                        Maximum="120" Style="{StaticResource ProgressBarFlat4ProgressButton}" />
+                        Maximum="110" Style="{StaticResource ProgressBarFlat4ProgressButton}" />
                 <Grid Margin="8">
                     <TextBlock Text="拖放压缩文件/PDF..." HorizontalAlignment="Center" VerticalAlignment="Top" />
                     <TextBlock d:Text="0" Text="{Binding UnpackStatus.Projects.Count, Mode=OneWay}"
@@ -98,7 +98,7 @@
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
                 <ProgressBar Value="{Binding PackStatus.Progress, Mode=OneWay}" d:Value="50" Foreground="#FF81A9EA"
-                        Maximum="120" Style="{StaticResource ProgressBarFlat4ProgressButton}" />
+                        Maximum="110" Style="{StaticResource ProgressBarFlat4ProgressButton}" />
                 <Grid Margin="8">
                     <TextBlock Text="拖放文件夹..." HorizontalAlignment="Center" VerticalAlignment="Top" />
                     <TextBlock d:Text="0" Text="{Binding PackStatus.Projects.Count, Mode=OneWay}"

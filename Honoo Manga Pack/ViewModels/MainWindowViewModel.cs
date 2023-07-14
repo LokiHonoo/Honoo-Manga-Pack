@@ -88,8 +88,8 @@ namespace Honoo.MangaPack.ViewModels
                                this.PackStatus.Log.Add(log);
                            }
                        }
-                       WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(120), "PackProgress");
-                       Thread.Sleep(200);
+                       WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(110), "PackProgress");
+                       Thread.Sleep(500);
                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "PackProgress");
                        this.PackStatus.Running = false;
                    });
@@ -172,8 +172,8 @@ namespace Honoo.MangaPack.ViewModels
                                 this.UnpackStatus.Log.Add(log);
                             }
                         }
-                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(120), "UnpackProgress");
-                        Thread.Sleep(200);
+                        WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(110), "UnpackProgress");
+                        Thread.Sleep(500);
                         WeakReferenceMessenger.Default.Send(new ValueChangedMessage<int>(0), "UnpackProgress");
                         this.UnpackStatus.Running = false;
                     });
