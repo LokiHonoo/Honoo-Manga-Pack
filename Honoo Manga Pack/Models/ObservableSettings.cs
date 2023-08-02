@@ -1,120 +1,107 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Honoo.Configuration;
-using System;
+using Honoo.MangaPack.Classes;
+using System.Collections.ObjectModel;
 using System.IO;
 
 namespace Honoo.MangaPack.Models
 {
     public sealed class ObservableSettings : ObservableObject
     {
-        private static readonly string _configFlie = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.xml");
-
-        private bool _executeAtDrop;
-        private bool _packDelOrigin;
-        private bool _packRemoveNested;
-        private bool _packRoot;
-        private bool _packSaveTo;
-        private bool _packSuffixDiff;
-        private string _packSuffixDiffValue = string.Empty;
-        private bool _packSuffixEnd;
-        private string _packSuffixEndValue = string.Empty;
-        private bool _settingsExpanded;
-        private bool _showSettings;
-        private bool _topmost;
-        private bool _unpackDelOrigin;
-        private bool _unpackRemoveNested;
-        private bool _unpackResetName;
-        private bool _unpackSaveTo;
-        private int _windowLeft;
-        private int _windowTop;
-
+        private readonly List<byte[]> _adHashs = [];
+        private bool _addTag = false;
+        private bool _addTopTitle = false;
+        private ObservableCollection<string> _ads = [];
+        private bool _executeAtDrop = false;
+        private bool _moveToRecycleBin = false;
+        private ObservableCollection<string> _passwords = [];
+        private bool _removeAD = false;
+        private bool _resetName = false;
+        private string _selectedTag = string.Empty;
+        private ObservableCollection<string> _tags = ["[中国翻訳]"];
+        private bool _topmost = false;
+        private int _windowLeft = 300;
+        private int _windowTop = 300;
+        private string _workDirectly = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "HonooMangaPack");
+        public bool AddTag { get => _addTag; set => SetProperty(ref _addTag, value); }
+        public bool AddTopTitle { get => _addTopTitle; set => SetProperty(ref _addTopTitle, value); }
+        public List<byte[]> ADHashs => _adHashs;
+        public ObservableCollection<string> ADs { get => _ads; set => SetProperty(ref _ads, value); }
         public bool ExecuteAtDrop { get => _executeAtDrop; set => SetProperty(ref _executeAtDrop, value); }
-        public bool PackDelOrigin { get => _packDelOrigin; set => SetProperty(ref _packDelOrigin, value); }
-        public bool PackRemoveNested { get => _packRemoveNested; set => SetProperty(ref _packRemoveNested, value); }
-        public bool PackRoot { get => _packRoot; set => SetProperty(ref _packRoot, value); }
-        public bool PackSaveTo { get => _packSaveTo; set => SetProperty(ref _packSaveTo, value); }
-        public bool PackSuffixDiff { get => _packSuffixDiff; set => SetProperty(ref _packSuffixDiff, value); }
-        public string PackSuffixDiffValue { get => _packSuffixDiffValue; set => SetProperty(ref _packSuffixDiffValue, value); }
-        public bool PackSuffixEnd { get => _packSuffixEnd; set => SetProperty(ref _packSuffixEnd, value); }
-        public string PackSuffixEndValue { get => _packSuffixEndValue; set => SetProperty(ref _packSuffixEndValue, value); }
-        public bool SettingsExpanded { get => _settingsExpanded; set => SetProperty(ref _settingsExpanded, value); }
-        public bool ShowSettings { get => _showSettings; set => SetProperty(ref _showSettings, value); }
+        public bool MoveToRecycleBin { get => _moveToRecycleBin; set => SetProperty(ref _moveToRecycleBin, value); }
+        public ObservableCollection<string> Passwords { get => _passwords; set => SetProperty(ref _passwords, value); }
+        public bool RemoveAD { get => _removeAD; set => SetProperty(ref _removeAD, value); }
+        public bool ResetName { get => _resetName; set => SetProperty(ref _resetName, value); }
+        public string SelectedTag { get => _selectedTag; set => SetProperty(ref _selectedTag, value); }
+        public ObservableCollection<string> Tags { get => _tags; set => SetProperty(ref _tags, value); }
         public bool Topmost { get => _topmost; set => SetProperty(ref _topmost, value); }
-        public bool UnpackDelOrigin { get => _unpackDelOrigin; set => SetProperty(ref _unpackDelOrigin, value); }
-        public bool UnpackRemoveNested { get => _unpackRemoveNested; set => SetProperty(ref _unpackRemoveNested, value); }
-        public bool UnpackResetName { get => _unpackResetName; set => SetProperty(ref _unpackResetName, value); }
-        public bool UnpackSaveTo { get => _unpackSaveTo; set => SetProperty(ref _unpackSaveTo, value); }
         public int WindowLeft { get => _windowLeft; set => SetProperty(ref _windowLeft, value); }
         public int WindowTop { get => _windowTop; set => SetProperty(ref _windowTop, value); }
+        public string WorkDirectly { get => _workDirectly; set => SetProperty(ref _workDirectly, value); }
 
-        public ObservableSettings Clone()
+        public void Load(string configFlie)
         {
-            ObservableSettings settings = new()
+            using HonooSettingsManager manager = File.Exists(configFlie) ? new(configFlie) : new();
+            this.WindowTop = manager.Default.Properties.GetValue("WindowTop", 300);
+            this.WindowLeft = manager.Default.Properties.GetValue("WindowLeft", 300);
+            this.Topmost = manager.Default.Properties.GetValue("Topmost", false);
+            this.WorkDirectly = manager.Default.Properties.GetValue("WorkDirectly", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "HonooMangaPack"));
+            this.ExecuteAtDrop = manager.Default.Properties.GetValue("ExecuteAtDrop", false);
+            this.ResetName = manager.Default.Properties.GetValue("ResetName", false);
+            this.MoveToRecycleBin = manager.Default.Properties.GetValue("MoveToRecycleBin", false);
+            if (manager.Default.Properties.TryGetArrayValue("Passwords", out string[] passwords))
             {
-                WindowTop = this.WindowTop,
-                WindowLeft = this.WindowLeft,
-                Topmost = this.Topmost,
-                SettingsExpanded = this.SettingsExpanded,
-                ExecuteAtDrop = this.ExecuteAtDrop,
-                PackSaveTo = this.PackSaveTo,
-                PackSuffixEnd = this.PackSuffixEnd,
-                PackSuffixEndValue = this.PackSuffixEndValue,
-                PackSuffixDiff = this.PackSuffixDiff,
-                PackSuffixDiffValue = this.PackSuffixDiffValue,
-                PackRoot = this.PackRoot,
-                PackRemoveNested = this.PackRemoveNested,
-                PackDelOrigin = this.PackDelOrigin,
-                UnpackSaveTo = this.UnpackSaveTo,
-                UnpackRemoveNested = this.UnpackRemoveNested,
-                UnpackResetName = this.UnpackResetName,
-                UnpackDelOrigin = this.UnpackDelOrigin
-            };
-            return settings;
+                this.Passwords.Clear();
+                foreach (var password in passwords)
+                {
+                    this.Passwords.Add(password);
+                }
+            }
+            this.RemoveAD = manager.Default.Properties.GetValue("RemoveAD", false);
+            if (manager.Default.Properties.TryGetArrayValue("ADs", out string[] ads))
+            {
+                this.ADs.Clear();
+                _adHashs.Clear();
+                foreach (var ad in ads)
+                {
+                    if (XValueHelper.TryParse(ad, out byte[]? hash))
+                    {
+                        this.ADs.Add(ad);
+                        _adHashs.Add(hash!);
+                    }
+                }
+            }
+            this.AddTopTitle = manager.Default.Properties.GetValue("AddTopTitle", false);
+            this.AddTag = manager.Default.Properties.GetValue("AddTag", false);
+            if (manager.Default.Properties.TryGetArrayValue("Tags", out string[] tags))
+            {
+                this.Tags.Clear();
+                foreach (var tag in tags)
+                {
+                    this.Tags.Add(tag);
+                }
+            }
+            this.SelectedTag = manager.Default.Properties.GetValue("SelectedTag", string.Empty);
         }
 
-        public void Load()
+        public void Save(string configFlie)
         {
-            using ConfigurationManager manager = new(_configFlie);
-            this.WindowTop = manager.AppSettings.Properties.GetValue("WindowTop", 300);
-            this.WindowLeft = manager.AppSettings.Properties.GetValue("WindowLeft", 300);
-            this.Topmost = manager.AppSettings.Properties.GetValue("Topmost", false);
-            this.SettingsExpanded = manager.AppSettings.Properties.GetValue("SettingsExpanded", true);
-            this.ExecuteAtDrop = manager.AppSettings.Properties.GetValue("ExecuteAtDrop", false);
-            this.PackSaveTo = manager.AppSettings.Properties.GetValue("PackSaveTo", false);
-            this.PackSuffixEnd = manager.AppSettings.Properties.GetValue("PackSuffixEnd", false);
-            this.PackSuffixEndValue = manager.AppSettings.Properties.GetValue("PackSuffixEndValue", "[中国翻訳]");
-            this.PackSuffixDiff = manager.AppSettings.Properties.GetValue("PackSuffixDiff", false);
-            this.PackSuffixDiffValue = manager.AppSettings.Properties.GetValue("PackSuffixDiffValue", "[中国翻訳]");
-            this.PackRoot = manager.AppSettings.Properties.GetValue("PackRoot", true);
-            this.PackRemoveNested = manager.AppSettings.Properties.GetValue("PackRemoveNested", true);
-            this.PackDelOrigin = manager.AppSettings.Properties.GetValue("PackDelOrigin", false);
-            this.UnpackSaveTo = manager.AppSettings.Properties.GetValue("UnpackSaveTo", false);
-            this.UnpackRemoveNested = manager.AppSettings.Properties.GetValue("UnpackRemoveNested", true);
-            this.UnpackResetName = manager.AppSettings.Properties.GetValue("UnpackResetName", true);
-            this.UnpackDelOrigin = manager.AppSettings.Properties.GetValue("UnpackDelOrigin", false);
-        }
-
-        public void Save()
-        {
-            using ConfigurationManager manager = new(_configFlie);
-            manager.AppSettings.Properties["WindowTop"] = this.WindowTop.ToString();
-            manager.AppSettings.Properties["WindowLeft"] = this.WindowLeft.ToString();
-            manager.AppSettings.Properties["Topmost"] = this.Topmost.ToString();
-            manager.AppSettings.Properties["ShowSettings"] = this.SettingsExpanded.ToString();
-            manager.AppSettings.Properties["ExecuteAtDrop"] = this.ExecuteAtDrop.ToString();
-            manager.AppSettings.Properties["PackSaveTo"] = this.PackSaveTo.ToString();
-            manager.AppSettings.Properties["PackSuffixEnd"] = this.PackSuffixEnd.ToString();
-            manager.AppSettings.Properties["PackSuffixEndValue"] = this.PackSuffixEndValue;
-            manager.AppSettings.Properties["PackSuffixDiff"] = this.PackSuffixDiff.ToString();
-            manager.AppSettings.Properties["PackSuffixDiffValue"] = this.PackSuffixDiffValue;
-            manager.AppSettings.Properties["PackRoot"] = this.PackRoot.ToString();
-            manager.AppSettings.Properties["PackRemoveNested"] = this.PackRemoveNested.ToString();
-            manager.AppSettings.Properties["PackDelOrigin"] = this.PackDelOrigin.ToString();
-            manager.AppSettings.Properties["UnpackSaveTo"] = this.UnpackSaveTo.ToString();
-            manager.AppSettings.Properties["UnpackRemoveNested"] = this.UnpackRemoveNested.ToString();
-            manager.AppSettings.Properties["UnpackResetName"] = this.UnpackResetName.ToString();
-            manager.AppSettings.Properties["UnpackDelOrigin"] = this.UnpackDelOrigin.ToString();
-            manager.Save(_configFlie);
+            using HonooSettingsManager manager = new();
+            manager.Default.Properties.AddOrUpdate("WindowTop", this.WindowTop);
+            manager.Default.Properties.AddOrUpdate("WindowLeft", this.WindowLeft);
+            manager.Default.Properties.AddOrUpdate("Topmost", this.Topmost);
+            manager.Default.Properties.AddOrUpdate("WorkDirectly", this.WorkDirectly);
+            manager.Default.Properties.AddOrUpdate("ExecuteAtDrop", this.ExecuteAtDrop);
+            manager.Default.Properties.AddOrUpdate("ResetName", this.ResetName);
+            manager.Default.Properties.AddOrUpdate("MoveToRecycleBin", this.MoveToRecycleBin);
+            manager.Default.Properties.AddOrUpdateArray("Passwords", this.Passwords.ToArray());
+            manager.Default.Properties.AddOrUpdate("RemoveAD", this.RemoveAD);
+            manager.Default.Properties.AddOrUpdateArray("ADs", this.ADs.ToArray());
+            manager.Default.Properties.AddOrUpdate("AddTopTitle", this.AddTopTitle);
+            manager.Default.Properties.AddOrUpdate("AddTag", this.AddTag);
+            manager.Default.Properties.AddOrUpdateArray("Tags", this.Tags.ToArray());
+            manager.Default.Properties.AddOrUpdate("SelectedTag", this.SelectedTag);
+            manager.Save(configFlie);
         }
     }
 }

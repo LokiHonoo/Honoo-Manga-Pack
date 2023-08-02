@@ -2,7 +2,6 @@
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using iText.Kernel.Pdf.Xobject;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Honoo.MangaPack.Models

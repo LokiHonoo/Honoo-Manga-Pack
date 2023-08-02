@@ -1,38 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<TargetFramework>net6.0-windows</TargetFramework>
-		<RootNamespace>Honoo.MangaPack</RootNamespace>
-		<Nullable>enable</Nullable>
-		<UseWPF>true</UseWPF>
-		<Title>Honoo Manga Pack</Title>
-		<Authors>Loki Honoo</Authors>
-		<Company>Loki Honoo</Company>
-		<Copyright>Copyright (C) Loki Honoo 2023. All rights reserved.</Copyright>
-		<AssemblyName>MangaPack</AssemblyName>
-	</PropertyGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>Honoo.MangaPack</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <None Remove="Resources\LESLIE.TTF" />
-	  <None Remove="Resources\yoriko18.ico" />
-	</ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\LESLIE.TTF" />
+    <None Remove="Resources\yoriko18.ico" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Resource Include="Resources\yoriko18.ico" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Honoo.Configuration.ConfigurationManager" Version="1.4.5" />
+    <PackageReference Include="HonooUI.WPF" Version="1.0.0-alpha4" />
+    <PackageReference Include="itext" Version="8.0.4" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.122" />
+    <PackageReference Include="SharpCompress" Version="0.37.2" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-		<PackageReference Include="Honoo.Configuration.ConfigurationManager" Version="1.3.1" />
-		<PackageReference Include="itext7" Version="8.0.0" />
-		<PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
-		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
-		<PackageReference Include="SharpCompress" Version="0.33.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Resource Include="Resources\LESLIE.TTF" />
-	</ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\LESLIE.TTF" />
+    <Resource Include="Resources\yoriko18.ico" />
+  </ItemGroup>
 
 </Project>

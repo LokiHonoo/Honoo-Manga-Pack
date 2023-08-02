@@ -3,6 +3,6 @@
 {
     internal static class ModelLocator
     {
-        public static ObservableSettings ObservableSettings { get; } = new ObservableSettings();
+        internal static ObservableSettings ObservableSettings { get; } = new ObservableSettings();
     }
 }
