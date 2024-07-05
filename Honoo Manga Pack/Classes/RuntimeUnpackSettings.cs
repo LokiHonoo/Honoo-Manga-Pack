@@ -5,17 +5,23 @@ namespace Honoo.MangaPack.Classes
 {
     internal sealed class RuntimeUnpackSettings
     {
-        internal RuntimeUnpackSettings(ObservableSettings settings)
+        internal RuntimeUnpackSettings()
         {
-            this.WorkDirectly = Path.Combine(settings.WorkDirectly, "Unpacks");
-            this.ResetName = settings.ResetName;
-            this.MoveToRecycleBin = settings.MoveToRecycleBin;
-            this.Passwords = [.. settings.Passwords];
+            this.WorkDirectly = Path.Combine(ModelLocator.MainSettings.WorkDirectly, "Unpacks");
+            this.ResetName = ModelLocator.MainSettings.ResetName;
+            this.MoveToRecycleBin = ModelLocator.MainSettings.MoveToRecycleBin;
+            List<string[]> passwords = [];
+            foreach (var password in ModelLocator.PasswordSettings.Passwords)
+            {
+                passwords.Add(password);
+            }
+            passwords.Sort((x, y) => { return string.CompareOrdinal(x[1], y[1]); });
+            this.Passwords = passwords;
         }
 
         internal bool MoveToRecycleBin { get; }
-        internal string[] Passwords { get; }
-        internal bool ResetName { get;  }
+        internal ICollection<string[]> Passwords { get; }
+        internal bool ResetName { get; }
         internal string WorkDirectly { get; }
     }
 }

@@ -2,20 +2,21 @@
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using iText.Kernel.Pdf.Xobject;
+using System.Globalization;
 using System.IO;
 
-namespace Honoo.MangaPack.Models
+namespace Honoo.MangaPack.Classes
 {
     public class ImageRenderListener : IEventListener
     {
         private readonly string _dir;
         private readonly int _pad;
-        private int _error = 0;
-        private int _index = 0;
+        private int _error;
+        private int _index;
 
         public ImageRenderListener(int pages, string dir)
         {
-            _pad = pages.ToString().Length + 1;
+            _pad = pages.ToString(CultureInfo.InvariantCulture).Length + 1;
             _dir = dir;
         }
 
@@ -31,7 +32,7 @@ namespace Honoo.MangaPack.Models
                     if (imageObject != null)
                     {
                         _index++;
-                        string safe = _index.ToString().PadLeft(_pad, '0') + "." + imageObject.IdentifyImageFileExtension();
+                        string safe = _index.ToString(CultureInfo.InvariantCulture).PadLeft(_pad, '0') + "." + imageObject.IdentifyImageFileExtension();
                         string file = Path.Combine(_dir, safe);
                         File.WriteAllBytes(file, imageObject.GetImageBytes());
                     }

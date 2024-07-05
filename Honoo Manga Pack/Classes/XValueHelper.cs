@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Honoo.MangaPack.Classes
+﻿namespace Honoo.MangaPack.Classes
 {
     internal static class XValueHelper
     {

@@ -6,16 +6,18 @@ using SharpCompress.Writers;
 using System.IO;
 using System.Text;
 
-namespace Honoo.MangaPack.Models
+namespace Honoo.MangaPack.Classes
 {
     internal static class Pack
     {
-        private static readonly WriterOptions _writerOptions = new(CompressionType.None)
+        private static WriterOptions _writerOptions = new(CompressionType.None)
         {
             ArchiveEncoding = new ArchiveEncoding(Encoding.UTF8, Encoding.UTF8)
         };
 
-        internal static bool Do(string path, RuntimePackSettings settings, out Tuple<string, bool, Exception?> log)
+        internal static WriterOptions WriterOptions { get => _writerOptions; set => _writerOptions = value; }
+
+        internal static bool Do(string path, RuntimePackSettings settings, out Tuple<string, string, bool, Exception?> log)
         {
             if (Directory.Exists(path))
             {
@@ -77,20 +79,20 @@ namespace Honoo.MangaPack.Models
                     }
                     catch (Exception ex)
                     {
-                        log = new(path, false, ex);
+                        log = new(path, string.Empty, false, ex);
                         return false;
                     }
                     if (settings.MoveToRecycleBin)
                     {
                         FileSystem.DeleteDirectory(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
                     }
-                    log = new Tuple<string, bool, Exception?>(path, true, null);
+                    log = new Tuple<string, string, bool, Exception?>(path, zip, true, null);
                     return true;
                 }
-                log = new Tuple<string, bool, Exception?>(path, false, new FileNotFoundException("Connnot find files."));
+                log = new Tuple<string, string, bool, Exception?>(path, string.Empty, false, new FileNotFoundException("Connnot find files."));
                 return false;
             }
-            log = new Tuple<string, bool, Exception?>(path, false, new DirectoryNotFoundException("Directory not exists."));
+            log = new Tuple<string, string, bool, Exception?>(path, string.Empty, false, new DirectoryNotFoundException("Directory not exists."));
             return false;
         }
     }

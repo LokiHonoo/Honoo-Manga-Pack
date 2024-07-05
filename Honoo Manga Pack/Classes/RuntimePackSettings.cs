@@ -1,30 +1,35 @@
-﻿using System.IO;
+﻿using Honoo.MangaPack.Models;
+using System.IO;
 
-namespace Honoo.MangaPack.Models
+namespace Honoo.MangaPack.Classes
 {
-    public sealed class RuntimePackSettings
+    internal sealed class RuntimePackSettings
     {
-        internal RuntimePackSettings(ObservableSettings settings)
+        internal RuntimePackSettings()
         {
-            this.WorkDirectly = Path.Combine(settings.WorkDirectly, "Packs");
-            this.ResetName = settings.ResetName;
-            this.MoveToRecycleBin = settings.MoveToRecycleBin;
-            this.RemoveAD = settings.RemoveAD;
-            this.ADHashs = [.. settings.ADHashs];
-            this.AddTopTitle = settings.AddTopTitle;
-            this.AddTag = settings.AddTag;
-            this.SelectedTag = settings.SelectedTag;
+            this.WorkDirectly = Path.Combine(ModelLocator.MainSettings.WorkDirectly, "Packs");
+            this.ResetName = ModelLocator.MainSettings.ResetName;
+            this.MoveToRecycleBin = ModelLocator.MainSettings.MoveToRecycleBin;
+            this.RemoveAD = ModelLocator.MainSettings.RemoveAD;
+            this.ADs = [];
+            foreach (var ad in ModelLocator.ADSettings.ADs)
+            {
+                this.ADs.Add(ad[0]);
+            }
+            this.AddTopTitle = ModelLocator.MainSettings.AddTopTitle;
+            this.AddTag = ModelLocator.MainSettings.AddTag;
+            this.SelectedTag = ModelLocator.MainSettings.SelectedTag;
         }
 
-        public bool AddTag { get; }
-        public bool AddTopTitle { get; }
-        public byte[][] ADHashs { get; }
-        public bool ExecuteAtDrop { get; }
-        public bool MoveToRecycleBin { get; }
-        public bool RemoveAD { get; }
-        public bool ResetName { get; }
-        public string SelectedTag { get; }
+        internal bool AddTag { get; }
+        internal bool AddTopTitle { get; }
+        internal ICollection<string> ADs { get; }
+        internal bool ExecuteAtDrop { get; }
+        internal bool MoveToRecycleBin { get; }
+        internal bool RemoveAD { get; }
+        internal bool ResetName { get; }
+        internal string SelectedTag { get; }
 
-        public string WorkDirectly { get; }
+        internal string WorkDirectly { get; }
     }
 }

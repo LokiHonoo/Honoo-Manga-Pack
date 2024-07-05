@@ -2,6 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using Honoo.MangaPack.Classes;
 using Honoo.MangaPack.Models;
+using Honoo.MangaPack.UserControls;
+using HonooUI.WPF;
 using Microsoft.Win32;
 using System.IO;
 using System.Windows;
@@ -11,22 +13,31 @@ namespace Honoo.MangaPack.ViewModels
 {
     public sealed class MainWindowViewModel : ObservableObject
     {
-        private ObservableWorkbench _packWorkbench = new();
-        private ObservableSettings _settings = ModelLocator.ObservableSettings;
-        private ObservableWorkbench _unpackWorkbench = new();
+        private readonly MainSettings _mainSettings = ModelLocator.MainSettings;
+        private readonly TagSettings _tagSettings = ModelLocator.TagSettings;
+        private Workbench _packWorkbench = new();
+        private Workbench _unpackWorkbench = new();
 
         public MainWindowViewModel()
         {
-            this.BrowserWorkDirectlyCommand = new RelayCommand(BrowserWorkDirectlyCommandExecute);
+            this.BrowserWorkDirectlyCommand = new RelayCommand(BrowserWorkDirectlyExecute);
             this.UnpackDropCommand = new RelayCommand<DragEventArgs>(UnpackDropExecute, (e) => { return !this.UnpackWorkbench.IsRunning; });
             this.UnpackCommand = new RelayCommand(UnpackExecute);
             this.UnpackClearCommand = new RelayCommand(UnpackClearExecute, () => { return !this.UnpackWorkbench.IsRunning; });
             this.PackDropCommand = new RelayCommand<DragEventArgs>(PackDropExecute, (e) => { return !this.PackWorkbench.IsRunning; });
             this.PackCommand = new RelayCommand(PackExecute);
             this.PackClearCommand = new RelayCommand(PackClearExecute, () => { return !this.PackWorkbench.IsRunning; });
+            this.EditPasswordsCommand = new RelayCommand(EditPasswordsExecute);
+            this.EditTagsCommand = new RelayCommand(EditTagsCommandExecute);
         }
 
         public ICommand BrowserWorkDirectlyCommand { get; set; }
+
+        public ICommand EditTagsCommand { get; set; }
+
+        public MainSettings MainSettings => _mainSettings;
+
+        public ICommand EditPasswordsCommand { get; set; }
 
         public ICommand PackClearCommand { get; set; }
 
@@ -34,9 +45,9 @@ namespace Honoo.MangaPack.ViewModels
 
         public ICommand PackDropCommand { get; set; }
 
-        public ObservableWorkbench PackWorkbench { get => _packWorkbench; set => SetProperty(ref _packWorkbench, value); }
+        public Workbench PackWorkbench { get => _packWorkbench; set => SetProperty(ref _packWorkbench, value); }
 
-        public ObservableSettings Settings { get => _settings; set => SetProperty(ref _settings, value); }
+        public TagSettings TagSettings => _tagSettings;
 
         public ICommand UnpackClearCommand { get; set; }
 
@@ -44,19 +55,31 @@ namespace Honoo.MangaPack.ViewModels
 
         public ICommand UnpackDropCommand { get; set; }
 
-        public ObservableWorkbench UnpackWorkbench { get => _unpackWorkbench; set => SetProperty(ref _unpackWorkbench, value); }
+        public Workbench UnpackWorkbench { get => _unpackWorkbench; set => SetProperty(ref _unpackWorkbench, value); }
 
-        private void BrowserWorkDirectlyCommandExecute()
+        private void BrowserWorkDirectlyExecute()
         {
             OpenFolderDialog dialog = new()
             {
-                InitialDirectory = this.Settings.WorkDirectly
+                InitialDirectory = this.MainSettings.WorkDirectly
             };
             bool? result = dialog.ShowDialog();
             if (result.HasValue && result.Value)
             {
-                this.Settings.WorkDirectly = dialog.FolderName;
+                this.MainSettings.WorkDirectly = dialog.FolderName;
             }
+        }
+
+        private void EditTagsCommandExecute()
+        {
+            DialogManager.Default.Show(new TagsUserControl(), "标签");
+        }
+
+        private void EditPasswordsExecute()
+        {
+            //var window = new PasswordWindow();
+            //window.ShowDialog();
+            DialogManager.Default.Show(new PasswordsUserControl(), "解包密码");
         }
 
         private void PackClearExecute()
@@ -89,7 +112,7 @@ namespace Honoo.MangaPack.ViewModels
                                 this.PackWorkbench.Projects.Add(entry);
                             }
                         }
-                        if (this.Settings.ExecuteAtDrop && this.PackWorkbench.Projects.Count > 0)
+                        if (this.MainSettings.ExecuteAtDrop && this.PackWorkbench.Projects.Count > 0)
                         {
                             this.PackCommand.Execute(null);
                         }
@@ -115,7 +138,7 @@ namespace Honoo.MangaPack.ViewModels
                     Task.Run(() =>
                     {
                         bool dirOk = true;
-                        RuntimePackSettings settings = new(_settings);
+                        RuntimePackSettings settings = new();
                         if (!Directory.Exists(settings.WorkDirectly))
                         {
                             try
@@ -124,7 +147,7 @@ namespace Honoo.MangaPack.ViewModels
                             }
                             catch (Exception ex)
                             {
-                                Tuple<string, bool, Exception?> log = new(settings.WorkDirectly, false, ex);
+                                Tuple<string, string, bool, Exception?> log = new(settings.WorkDirectly, string.Empty, false, ex);
                                 this.PackWorkbench.Log.Add(log);
                                 dirOk = false;
                             }
@@ -135,7 +158,7 @@ namespace Honoo.MangaPack.ViewModels
                             {
                                 if (!this.PackWorkbench.Abort)
                                 {
-                                    if (!Pack.Do(this.PackWorkbench.Projects[i], settings, out Tuple<string, bool, Exception?> log))
+                                    if (!Pack.Do(this.PackWorkbench.Projects[i], settings, out Tuple<string, string, bool, Exception?> log))
                                     {
                                         this.PackWorkbench.HasError = true;
                                     }
@@ -180,7 +203,7 @@ namespace Honoo.MangaPack.ViewModels
                                 this.UnpackWorkbench.Projects.Add(entry);
                             }
                         }
-                        if (this.Settings.ExecuteAtDrop && this.UnpackWorkbench.Projects.Count > 0)
+                        if (this.MainSettings.ExecuteAtDrop && this.UnpackWorkbench.Projects.Count > 0)
                         {
                             this.UnpackCommand.Execute(null);
                         }
@@ -203,22 +226,32 @@ namespace Honoo.MangaPack.ViewModels
                     this.UnpackWorkbench.IsRunning = true;
                     this.UnpackWorkbench.Log.Clear();
                     this.UnpackWorkbench.HasError = false;
+                    bool move = _mainSettings.UnpacksMoveToPacks && !this.PackWorkbench.IsRunning && this.PackWorkbench.Projects.Count == 0;
                     Task.Run(() =>
                     {
-                        RuntimeUnpackSettings settings = new(_settings);
+                        RuntimeUnpackSettings settings = new();
                         for (int i = this.UnpackWorkbench.Projects.Count - 1; i >= 0; i--)
                         {
                             if (!this.UnpackWorkbench.Abort)
                             {
-                                if (!Unpack.Do(this.UnpackWorkbench.Projects[i], settings, out Tuple<string, bool, Exception?> log))
+                                if (!Unpack.Do(this.UnpackWorkbench.Projects[i], settings, out Tuple<string, string, bool, Exception?> log))
                                 {
                                     this.UnpackWorkbench.HasError = true;
                                 }
                                 this.UnpackWorkbench.Projects.RemoveAt(i);
                                 this.UnpackWorkbench.Log.Add(log);
+                                if (move && log.Item3)
+                                {
+                                    this.PackWorkbench.Projects.Add(log.Item2);
+                                }
                             }
                         }
                         this.UnpackWorkbench.IsRunning = false;
+                        //
+                        if (move && _mainSettings.PackUnpacks && this.PackWorkbench.Projects.Count > 0)
+                        {
+                            PackExecute();
+                        }
                     });
                 }
             }

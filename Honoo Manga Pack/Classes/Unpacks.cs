@@ -1,14 +1,14 @@
-﻿using Honoo.MangaPack.Classes;
-using iText.Kernel.Pdf;
+﻿using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using Microsoft.VisualBasic.FileIO;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompress.Readers;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace Honoo.MangaPack.Models
+namespace Honoo.MangaPack.Classes
 {
     internal static class Unpack
     {
@@ -20,29 +20,29 @@ namespace Honoo.MangaPack.Models
 
         private static readonly ReaderOptions _readerOptions = new()
         {
-            ArchiveEncoding = new ArchiveEncoding(Encoding.UTF8, Encoding.UTF8),
+            ArchiveEncoding = new ArchiveEncoding(Encoding.UTF32, Encoding.UTF32),
             LookForHeader = true
         };
 
-        internal static bool Do(string path, RuntimeUnpackSettings settings, out Tuple<string, bool, Exception?> log)
+        internal static bool Do(string path, RuntimeUnpackSettings settings, out Tuple<string, string, bool, Exception?> log)
         {
             if (File.Exists(path))
             {
-                string ext = Path.GetExtension(path).ToLowerInvariant()!;
+                string ext = Path.GetExtension(path).ToUpperInvariant()!;
                 switch (ext)
                 {
-                    case ".zip": case ".rar": case ".7z": return TryDoZip(path, settings, out log);
-                    case ".pdf": return TryDoPdf(path, settings, out log);
+                    case ".ZIP": case ".RAR": case ".7Z": return TryDoZip(path, settings, out log);
+                    case ".PDF": return TryDoPdf(path, settings, out log);
                     default:
-                        log = new Tuple<string, bool, Exception?>(path, false, new Exception($"Unsupported file extension - \"{ext}\"."));
+                        log = new Tuple<string, string, bool, Exception?>(path, string.Empty, false, new IOException($"Unsupported file extension - \"{ext}\"."));
                         return false;
                 }
             }
-            log = new Tuple<string, bool, Exception?>(path, false, new Exception("File not exists."));
+            log = new Tuple<string, string, bool, Exception?>(path, string.Empty, false, new FileNotFoundException("File not exists."));
             return false;
         }
 
-        private static bool TryDoPdf(string path, RuntimeUnpackSettings settings, out Tuple<string, bool, Exception?> log)
+        private static bool TryDoPdf(string path, RuntimeUnpackSettings settings, out Tuple<string, string, bool, Exception?> log)
         {
             string title = Path.GetFileNameWithoutExtension(path);
             string dir = Path.Combine(settings.WorkDirectly, title);
@@ -56,7 +56,8 @@ namespace Honoo.MangaPack.Models
             {
                 Directory.CreateDirectory(dir);
                 using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                using PdfDocument document = new(new PdfReader(stream));
+                var reader = new PdfReader(stream);
+                using PdfDocument document = new(reader);
                 int pages = document.GetNumberOfPages();
                 ImageRenderListener strategy = new(pages, dir);
                 PdfCanvasProcessor parser = new(strategy);
@@ -64,23 +65,23 @@ namespace Honoo.MangaPack.Models
                 {
                     parser.ProcessPageContent(document.GetPage(i));
                 }
+                reader.Close();
             }
             catch (Exception ex)
             {
-                log = new Tuple<string, bool, Exception?>(path, false, ex);
+                log = new Tuple<string, string, bool, Exception?>(path, string.Empty, false, ex);
                 return false;
             }
             if (settings.MoveToRecycleBin)
             {
                 FileSystem.DeleteFile(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
             }
-            log = new Tuple<string, bool, Exception?>(path, true, null);
+            log = new Tuple<string, string, bool, Exception?>(path, dir, true, null);
             return true;
         }
 
-        private static bool TryDoZip(string path, RuntimeUnpackSettings settings, out Tuple<string, bool, Exception?> log)
+        private static bool TryDoZip(string path, RuntimeUnpackSettings settings, out Tuple<string, string, bool, Exception?> log)
         {
-            _readerOptions.Password = null;
             string title = Path.GetFileNameWithoutExtension(path);
             string tmp = Path.Combine(settings.WorkDirectly, Path.GetRandomFileName());
             try
@@ -89,23 +90,30 @@ namespace Honoo.MangaPack.Models
             }
             catch (Exception ex)
             {
-                log = new Tuple<string, bool, Exception?>(path, false, ex);
+                log = new Tuple<string, string, bool, Exception?>(path, string.Empty, false, ex);
                 return false;
             }
-            if (!TryDoZip(path, tmp, null, out Exception? exception))
+            _readerOptions.Password = null;
+            if (!TryDoZip(path, tmp, out Exception? exception))
             {
                 bool extracted = false;
-                for (int i = 0; i < settings.Passwords.Length; i++)
+                foreach (var password in settings.Passwords)
                 {
-                    if (TryDoZip(path, tmp, settings.Passwords[i], out exception))
+                    _readerOptions.Password = password[0];
+                    if (TryDoZip(path, tmp, out exception))
                     {
+                        if (!int.TryParse(password[1], out int weights))
+                        {
+                            weights = 0;
+                        }
+                        password[1] = (weights + 1).ToString(CultureInfo.InvariantCulture);
                         extracted = true;
                         break;
                     }
                 }
                 if (!extracted)
                 {
-                    log = new Tuple<string, bool, Exception?>(path, false, exception);
+                    log = new Tuple<string, string, bool, Exception?>(path, string.Empty, false, exception);
                     return false;
                 }
             }
@@ -158,16 +166,12 @@ namespace Honoo.MangaPack.Models
             {
                 FileSystem.DeleteFile(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
             }
-            log = new Tuple<string, bool, Exception?>(path, true, null);
+            log = new Tuple<string, string, bool, Exception?>(path, dir, true, null);
             return true;
         }
 
-        private static bool TryDoZip(string path, string dir, string? password, out Exception? exception)
+        private static bool TryDoZip(string path, string dir, out Exception? exception)
         {
-            if (!string.IsNullOrEmpty(password))
-            {
-                _readerOptions.Password = password;
-            }
             try
             {
                 using (IArchive archive = ArchiveFactory.Open(path, _readerOptions))
