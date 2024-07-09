@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Honoo.IO.Hashing;
 using Honoo.MangaPack.Models;
+using HonooUI.WPF;
 using Microsoft.Win32;
 using System.IO;
 using System.Windows.Input;
@@ -10,7 +11,7 @@ using System.Windows.Media.Imaging;
 
 namespace Honoo.MangaPack.ViewModels
 {
-    public sealed class ADsUserControlViewModel : ObservableObject
+    public sealed class ADEditUserControlViewModel : ObservableObject
     {
         private readonly string _adDirectly = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ads");
         private readonly Crc32 _crc = new();
@@ -22,7 +23,7 @@ namespace Honoo.MangaPack.ViewModels
         private string _checksum = string.Empty;
         public string Checksum { get => _checksum; set => SetProperty(ref _checksum, value); }
 
-        public ADsUserControlViewModel()
+        public ADEditUserControlViewModel()
         {
             this.OpenFileDialogCommand = new RelayCommand(OpenFileDialogExecute);
             this.AddADCommand = new RelayCommand(AddADExecute, () => { return !string.IsNullOrWhiteSpace(this.AD); });
@@ -97,11 +98,12 @@ namespace Honoo.MangaPack.ViewModels
             {
                 Directory.CreateDirectory(_adDirectly);
             }
-            File.Copy(this.ADFile, Path.Combine(_adDirectly, dstFile));
+            File.Copy(this.ADFile, Path.Combine(_adDirectly, dstFile), true);
             this.Settings.ADs.Insert(0, [this.AD, ext]);
             this.ADFile = string.Empty;
             this.AD = string.Empty;
             this.ADImage = null;
+            this.Checksum = string.Empty;
         }
 
         private void OpenFileDialogExecute()
@@ -149,17 +151,27 @@ namespace Honoo.MangaPack.ViewModels
 
         private void RemoveADExecute(object? obj)
         {
-            for (int i = this.Settings.ADs.Count - 1; i >= 0; i--)
+            if (obj is string ad)
             {
-                if ((obj is string ad) && ad == this.Settings.ADs[i][0])
+                DialogOptions dialogOptions = new DialogOptions() { Buttons = DialogButtons.YesNo, Image = DialogImage.Information };
+                DialogManager.GetDialogAgent("ADDialogHost").Show($"删除 \"{ad}\"？", string.Empty, dialogOptions, (e) =>
                 {
-                    string file = this.Settings.ADs[i][1];
-                    if (File.Exists(file))
+                    if (e.DialogResult == DialogResult.Yes)
                     {
-                        File.Delete(file);
+                        for (int i = this.Settings.ADs.Count - 1; i >= 0; i--)
+                        {
+                            if (ad == this.Settings.ADs[i][0])
+                            {
+                                string file = this.Settings.ADs[i][1];
+                                if (File.Exists(file))
+                                {
+                                    File.Delete(file);
+                                }
+                                this.Settings.ADs.RemoveAt(i);
+                            }
+                        }
                     }
-                    this.Settings.ADs.RemoveAt(i);
-                }
+                }, null);
             }
         }
     }

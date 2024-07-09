@@ -1,17 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Honoo.MangaPack.Models;
+using HonooUI.WPF;
 using System.Globalization;
 using System.Windows.Input;
 
 namespace Honoo.MangaPack.ViewModels
 {
-    public sealed class PasswordsUserControlViewModel : ObservableObject
+    public sealed class PasswordEditUserControlViewModel : ObservableObject
     {
         private readonly PasswordSettings _settings = ModelLocator.PasswordSettings;
         private string _password = string.Empty;
 
-        public PasswordsUserControlViewModel()
+        public PasswordEditUserControlViewModel()
         {
             this.AddPasswordCommand = new RelayCommand(AddPasswordExecute, () => { return !string.IsNullOrWhiteSpace(this.Password); });
             this.RemovePasswordCommand = new RelayCommand<object?>(RemovePasswordExecute);
@@ -45,12 +46,22 @@ namespace Honoo.MangaPack.ViewModels
 
         private void RemovePasswordExecute(object? obj)
         {
-            for (int i = this.Settings.Passwords.Count - 1; i >= 0; i--)
+            if (obj is string password)
             {
-                if ((obj is string password) && password == this.Settings.Passwords[i][0])
+                DialogOptions dialogOptions = new DialogOptions() { Buttons = DialogButtons.YesNo, Image = DialogImage.Information };
+                DialogManager.GetDialogAgent("PassordDialogHost").Show($"删除 \"{password}\"？", string.Empty, dialogOptions, (e) =>
                 {
-                    this.Settings.Passwords.RemoveAt(i);
-                }
+                    if (e.DialogResult == DialogResult.Yes)
+                    {
+                        for (int i = this.Settings.Passwords.Count - 1; i >= 0; i--)
+                        {
+                            if (password == this.Settings.Passwords[i][0])
+                            {
+                                this.Settings.Passwords.RemoveAt(i);
+                            }
+                        }
+                    }
+                }, null);
             }
         }
     }

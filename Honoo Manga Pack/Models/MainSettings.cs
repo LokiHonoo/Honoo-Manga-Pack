@@ -11,7 +11,7 @@ namespace Honoo.MangaPack.Models
         private bool _executeAtDrop;
         private bool _moveToRecycleBin;
         private bool _packUnpacks;
-        private bool _removeAD;
+        private bool _deleteAD;
         private bool _resetName;
         private string _selectedTag = string.Empty;
         private bool _settingExpanded = true;
@@ -25,7 +25,7 @@ namespace Honoo.MangaPack.Models
         public bool ExecuteAtDrop { get => _executeAtDrop; set => SetProperty(ref _executeAtDrop, value); }
         public bool MoveToRecycleBin { get => _moveToRecycleBin; set => SetProperty(ref _moveToRecycleBin, value); }
         public bool PackUnpacks { get => _packUnpacks; set => SetProperty(ref _packUnpacks, value); }
-        public bool RemoveAD { get => _removeAD; set => SetProperty(ref _removeAD, value); }
+        public bool DeleteAD { get => _deleteAD; set => SetProperty(ref _deleteAD, value); }
         public bool ResetName { get => _resetName; set => SetProperty(ref _resetName, value); }
         public string SelectedTag { get => _selectedTag; set => SetProperty(ref _selectedTag, value); }
         public bool SettingExpanded { get => _settingExpanded; set => SetProperty(ref _settingExpanded, value); }

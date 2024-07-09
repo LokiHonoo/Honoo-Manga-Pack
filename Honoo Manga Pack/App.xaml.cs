@@ -49,6 +49,13 @@ namespace Honoo.MangaPack
                 ModelLocator.MainSettings.ExecuteAtDrop = manager.Default.Properties.GetValue("ExecuteAtDrop", ModelLocator.MainSettings.ExecuteAtDrop);
                 ModelLocator.MainSettings.ResetName = manager.Default.Properties.GetValue("ResetName", ModelLocator.MainSettings.ResetName);
                 ModelLocator.MainSettings.MoveToRecycleBin = manager.Default.Properties.GetValue("MoveToRecycleBin", ModelLocator.MainSettings.MoveToRecycleBin);
+                ModelLocator.MainSettings.UnpacksMoveToPacks = manager.Default.Properties.GetValue("UnpacksMoveToPacks", ModelLocator.MainSettings.UnpacksMoveToPacks);
+                ModelLocator.MainSettings.PackUnpacks = manager.Default.Properties.GetValue("PackUnpacks", ModelLocator.MainSettings.PackUnpacks);
+                ModelLocator.MainSettings.DeleteAD = manager.Default.Properties.GetValue("DeleteAD", ModelLocator.MainSettings.DeleteAD);
+                ModelLocator.MainSettings.AddTopTitle = manager.Default.Properties.GetValue("AddTopTitle", ModelLocator.MainSettings.AddTopTitle);
+                ModelLocator.MainSettings.AddTag = manager.Default.Properties.GetValue("AddTag", ModelLocator.MainSettings.AddTag);
+                ModelLocator.MainSettings.SelectedTag = manager.Default.Properties.GetValue("SelectedTag", string.Empty);
+                //
                 if (manager.Default.Properties.TryGetArrayValue("Passwords", out string[][] passwords))
                 {
                     ModelLocator.PasswordSettings.Passwords.Clear();
@@ -57,11 +64,10 @@ namespace Honoo.MangaPack
                         ModelLocator.PasswordSettings.Passwords.Add(password);
                     }
                 }
-                ModelLocator.MainSettings.UnpacksMoveToPacks = manager.Default.Properties.GetValue("UnpacksMoveToPacks", ModelLocator.MainSettings.UnpacksMoveToPacks);
-                ModelLocator.MainSettings.PackUnpacks = manager.Default.Properties.GetValue("PackUnpacks", ModelLocator.MainSettings.PackUnpacks);
-                ModelLocator.MainSettings.RemoveAD = manager.Default.Properties.GetValue("RemoveAD", ModelLocator.MainSettings.RemoveAD);
-                ModelLocator.MainSettings.AddTopTitle = manager.Default.Properties.GetValue("AddTopTitle", ModelLocator.MainSettings.AddTopTitle);
-                ModelLocator.MainSettings.AddTag = manager.Default.Properties.GetValue("AddTag", ModelLocator.MainSettings.AddTag);
+                ModelLocator.PasswordSettings.PasswordRemoveConfirm = manager.Default.Properties.GetValue("PasswordRemoveConfirm", ModelLocator.PasswordSettings.PasswordRemoveConfirm);
+                //
+                ModelLocator.ADSettings.ADRemoveConfirm = manager.Default.Properties.GetValue("ADRemoveConfirm", ModelLocator.ADSettings.ADRemoveConfirm);
+                //
                 if (manager.Default.Properties.TryGetArrayValue("Tags", out string[] tags))
                 {
                     ModelLocator.TagSettings.Tags.Clear();
@@ -70,8 +76,9 @@ namespace Honoo.MangaPack
                         ModelLocator.TagSettings.Tags.Add(tag);
                     }
                 }
-                ModelLocator.MainSettings.SelectedTag = manager.Default.Properties.GetValue("SelectedTag", string.Empty);
+                ModelLocator.TagSettings.TagRemoveConfirm = manager.Default.Properties.GetValue("TagRemoveConfirm", ModelLocator.TagSettings.TagRemoveConfirm);
             }
+
             using (HonooSettingsManager manager = File.Exists(_adlistFile) ? new(_adlistFile) : new())
             {
                 if (manager.Default.Properties.TryGetArrayValue("ADs", out string[][] ads))
@@ -97,14 +104,17 @@ namespace Honoo.MangaPack
                 manager.Default.Properties.AddOrUpdate("ExecuteAtDrop", ModelLocator.MainSettings.ExecuteAtDrop);
                 manager.Default.Properties.AddOrUpdate("ResetName", ModelLocator.MainSettings.ResetName);
                 manager.Default.Properties.AddOrUpdate("MoveToRecycleBin", ModelLocator.MainSettings.MoveToRecycleBin);
-                manager.Default.Properties.AddOrUpdateArray("Passwords", ModelLocator.PasswordSettings.Passwords.ToArray());
                 manager.Default.Properties.AddOrUpdate("UnpacksMoveToPacks", ModelLocator.MainSettings.UnpacksMoveToPacks);
                 manager.Default.Properties.AddOrUpdate("PackUnpacks", ModelLocator.MainSettings.PackUnpacks);
-                manager.Default.Properties.AddOrUpdate("RemoveAD", ModelLocator.MainSettings.RemoveAD);
+                manager.Default.Properties.AddOrUpdate("DeleteAD", ModelLocator.MainSettings.DeleteAD);
                 manager.Default.Properties.AddOrUpdate("AddTopTitle", ModelLocator.MainSettings.AddTopTitle);
                 manager.Default.Properties.AddOrUpdate("AddTag", ModelLocator.MainSettings.AddTag);
-                manager.Default.Properties.AddOrUpdateArray("Tags", ModelLocator.TagSettings.Tags.ToArray());
                 manager.Default.Properties.AddOrUpdate("SelectedTag", ModelLocator.MainSettings.SelectedTag);
+                manager.Default.Properties.AddOrUpdateArray("Passwords", ModelLocator.PasswordSettings.Passwords.ToArray());
+                manager.Default.Properties.AddOrUpdate("PasswordRemoveConfirm", ModelLocator.PasswordSettings.PasswordRemoveConfirm);
+                manager.Default.Properties.AddOrUpdate("ADRemoveConfirm", ModelLocator.ADSettings.ADRemoveConfirm);
+                manager.Default.Properties.AddOrUpdateArray("Tags", ModelLocator.TagSettings.Tags.ToArray());
+                manager.Default.Properties.AddOrUpdate("TagRemoveConfirm", ModelLocator.TagSettings.TagRemoveConfirm);
                 manager.Save(_configFlie);
             }
             using (HonooSettingsManager manager = new())

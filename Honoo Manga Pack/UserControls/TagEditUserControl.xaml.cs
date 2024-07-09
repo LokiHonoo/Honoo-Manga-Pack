@@ -3,11 +3,11 @@
 namespace Honoo.MangaPack.UserControls
 {
     /// <summary>
-    /// PasswordsUserControl.xaml 的交互逻辑
+    /// TagEditUserControl.xaml 的交互逻辑
     /// </summary>
-    public partial class PasswordsUserControl : UserControl
+    public partial class TagEditUserControl : UserControl
     {
-        public PasswordsUserControl()
+        public TagEditUserControl()
         {
             InitializeComponent();
         }

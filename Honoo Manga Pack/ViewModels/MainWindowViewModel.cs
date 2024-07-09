@@ -75,19 +75,19 @@ namespace Honoo.MangaPack.ViewModels
 
         private void EditADsExecute()
         {
-            DialogManager.Default.Show(new ADsUserControl(), "广告页");
+            DialogManager.Default.Show(new ADEditUserControl(), "广告页");
         }
 
         private void EditPasswordsExecute()
         {
             //var window = new PasswordWindow();
             //window.ShowDialog();
-            DialogManager.Default.Show(new PasswordsUserControl(), "解包密码");
+            DialogManager.Default.Show(new PasswordEditUserControl(), "解包密码");
         }
 
         private void EditTagsExecute()
         {
-            DialogManager.Default.Show(new TagsUserControl(), "标签");
+            DialogManager.Default.Show(new TagEditUserControl(), "标签");
         }
 
         private void PackClearExecute()

@@ -23,7 +23,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Honoo.Configuration.ConfigurationManager" Version="1.4.11" />
     <PackageReference Include="Honoo.IO.Hashing.Crc" Version="1.0.12" />
-    <PackageReference Include="HonooUI.WPF" Version="1.0.0-alpha9" />
+    <PackageReference Include="HonooUI.WPF" Version="1.0.0-alpha.2" />
     <PackageReference Include="itext" Version="8.0.4" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.122" />
     <PackageReference Include="SharpCompress" Version="0.37.2" />
@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="UserControls\ADsUserControl.xaml.cs">
+    <Compile Update="UserControls\ADEditUserControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

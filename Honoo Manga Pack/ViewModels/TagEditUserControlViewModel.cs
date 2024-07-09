@@ -1,16 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Honoo.MangaPack.Models;
+using HonooUI.WPF;
 using System.Windows.Input;
 
 namespace Honoo.MangaPack.ViewModels
 {
-    public sealed class TagsUserControlViewModel : ObservableObject
+    public sealed class TagEditUserControlViewModel : ObservableObject
     {
         private readonly TagSettings _settings = ModelLocator.TagSettings;
         private string _tag = string.Empty;
 
-        public TagsUserControlViewModel()
+        public TagEditUserControlViewModel()
         {
             this.AddTagCommand = new RelayCommand(AddTagExecute, () => { return !string.IsNullOrWhiteSpace(this.Tag); });
             this.MoveUpTagCommand = new RelayCommand<object?>(MoveUpTagExecute);
@@ -45,14 +46,17 @@ namespace Honoo.MangaPack.ViewModels
 
         private void MoveDownExecute(object? obj)
         {
-            for (int i = 0; i < this.Settings.Tags.Count; i++)
+            if (obj is string tag)
             {
-                if ((obj is string tag) && tag == this.Settings.Tags[i])
+                for (int i = 0; i < this.Settings.Tags.Count; i++)
                 {
-                    if (i != this.Settings.Tags.Count - 1)
+                    if (tag == this.Settings.Tags[i])
                     {
-                        this.Settings.Tags.Move(i, i + 1);
-                        return;
+                        if (i != this.Settings.Tags.Count - 1)
+                        {
+                            this.Settings.Tags.Move(i, i + 1);
+                            return;
+                        }
                     }
                 }
             }
@@ -60,14 +64,17 @@ namespace Honoo.MangaPack.ViewModels
 
         private void MoveUpTagExecute(object? obj)
         {
-            for (int i = 0; i < this.Settings.Tags.Count; i++)
+            if (obj is string tag)
             {
-                if ((obj is string tag) && tag == this.Settings.Tags[i])
+                for (int i = 0; i < this.Settings.Tags.Count; i++)
                 {
-                    if (i != 0)
+                    if (tag == this.Settings.Tags[i])
                     {
-                        this.Settings.Tags.Move(i, i - 1);
-                        return;
+                        if (i != 0)
+                        {
+                            this.Settings.Tags.Move(i, i - 1);
+                            return;
+                        }
                     }
                 }
             }
@@ -75,12 +82,22 @@ namespace Honoo.MangaPack.ViewModels
 
         private void RemoveTagExecute(object? obj)
         {
-            for (int i = this.Settings.Tags.Count - 1; i >= 0; i--)
+            if (obj is string tag)
             {
-                if ((obj is string tag) && tag == this.Settings.Tags[i])
+                DialogOptions dialogOptions = new DialogOptions() { Buttons = DialogButtons.YesNo, Image = DialogImage.Information };
+                DialogManager.GetDialogAgent("TagDialogHost").Show($"删除 \"{tag}\"？", string.Empty, dialogOptions, (e) =>
                 {
-                    this.Settings.Tags.RemoveAt(i);
-                }
+                    if (e.DialogResult == DialogResult.Yes)
+                    {
+                        for (int i = this.Settings.Tags.Count - 1; i >= 0; i--)
+                        {
+                            if (tag == this.Settings.Tags[i])
+                            {
+                                this.Settings.Tags.RemoveAt(i);
+                            }
+                        }
+                    }
+                }, null);
             }
         }
     }
