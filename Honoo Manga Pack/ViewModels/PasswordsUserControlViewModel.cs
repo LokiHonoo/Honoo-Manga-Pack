@@ -14,7 +14,7 @@ namespace Honoo.MangaPack.ViewModels
         public PasswordsUserControlViewModel()
         {
             this.AddPasswordCommand = new RelayCommand(AddPasswordExecute, () => { return !string.IsNullOrWhiteSpace(this.Password); });
-            this.RemovePasswordCommand = new RelayCommand<string?>(RemovePasswordExecute);
+            this.RemovePasswordCommand = new RelayCommand<object?>(RemovePasswordExecute);
         }
 
         public ICommand AddPasswordCommand { get; set; }
@@ -43,11 +43,11 @@ namespace Honoo.MangaPack.ViewModels
             this.Password = string.Empty;
         }
 
-        private void RemovePasswordExecute(string? password)
+        private void RemovePasswordExecute(object? obj)
         {
             for (int i = this.Settings.Passwords.Count - 1; i >= 0; i--)
             {
-                if (password == this.Settings.Passwords[i][0])
+                if ((obj is string password) && password == this.Settings.Passwords[i][0])
                 {
                     this.Settings.Passwords.RemoveAt(i);
                 }

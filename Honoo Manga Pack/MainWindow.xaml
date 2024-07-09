@@ -263,10 +263,7 @@
                                         </Border>
                                     </hui:TextBox.Header>
                                     <hui:TextBox.Footer>
-                                        <Button Grid.Column="1"
-                                                Margin="3,0"
-                                                Command="{Binding BrowserWorkDirectlyCommand}"
-                                                Style="{StaticResource ButtonTransparentStyle}">
+                                        <Button Margin="3,0" Command="{Binding BrowserWorkDirectlyCommand}" Style="{StaticResource ButtonTransparentStyle}">
                                             <Path Margin="5" Data="{StaticResource FolderOpenGeometry}" Style="{StaticResource PathIcon16Style}" />
                                         </Button>
                                     </hui:TextBox.Footer>
@@ -357,7 +354,7 @@
                                         ToolTip="打包速度慢">
                                     <Path Data="{StaticResource QuestionGeometry}" Fill="{DynamicResource AccentBrush}" Style="{StaticResource PathIcon12Style}" />
                                 </Border>
-                                <Button Grid.Column="2" Margin="10,0,0,0">
+                                <Button Grid.Column="2" Margin="10,0,0,0" Command="{Binding EditADsCommand}">
                                     <Path Margin="5" Data="{StaticResource MoreHorizontalGeometry}" Style="{StaticResource PathIcon16Style}" />
                                 </Button>
                             </Grid>

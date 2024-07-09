@@ -15,12 +15,14 @@
 
   <ItemGroup>
     <None Remove="Resources\LESLIE.TTF" />
+    <None Remove="Resources\NoADFile.png" />
     <None Remove="Resources\yoriko18.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Honoo.Configuration.ConfigurationManager" Version="1.4.11" />
+    <PackageReference Include="Honoo.IO.Hashing.Crc" Version="1.0.12" />
     <PackageReference Include="HonooUI.WPF" Version="1.0.0-alpha9" />
     <PackageReference Include="itext" Version="8.0.4" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.122" />
@@ -29,6 +31,7 @@
 
   <ItemGroup>
     <Resource Include="Resources\LESLIE.TTF" />
+    <Resource Include="Resources\NoADFile.png" />
     <Resource Include="Resources\yoriko18.ico" />
   </ItemGroup>
 

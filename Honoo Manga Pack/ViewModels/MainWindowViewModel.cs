@@ -28,16 +28,19 @@ namespace Honoo.MangaPack.ViewModels
             this.PackCommand = new RelayCommand(PackExecute);
             this.PackClearCommand = new RelayCommand(PackClearExecute, () => { return !this.PackWorkbench.IsRunning; });
             this.EditPasswordsCommand = new RelayCommand(EditPasswordsExecute);
-            this.EditTagsCommand = new RelayCommand(EditTagsCommandExecute);
+            this.EditADsCommand = new RelayCommand(EditADsExecute);
+            this.EditTagsCommand = new RelayCommand(EditTagsExecute);
         }
 
         public ICommand BrowserWorkDirectlyCommand { get; set; }
 
+        public ICommand EditADsCommand { get; set; }
+
+        public ICommand EditPasswordsCommand { get; set; }
+
         public ICommand EditTagsCommand { get; set; }
 
         public MainSettings MainSettings => _mainSettings;
-
-        public ICommand EditPasswordsCommand { get; set; }
 
         public ICommand PackClearCommand { get; set; }
 
@@ -70,9 +73,9 @@ namespace Honoo.MangaPack.ViewModels
             }
         }
 
-        private void EditTagsCommandExecute()
+        private void EditADsExecute()
         {
-            DialogManager.Default.Show(new TagsUserControl(), "标签");
+            DialogManager.Default.Show(new ADsUserControl(), "广告页");
         }
 
         private void EditPasswordsExecute()
@@ -80,6 +83,11 @@ namespace Honoo.MangaPack.ViewModels
             //var window = new PasswordWindow();
             //window.ShowDialog();
             DialogManager.Default.Show(new PasswordsUserControl(), "解包密码");
+        }
+
+        private void EditTagsExecute()
+        {
+            DialogManager.Default.Show(new TagsUserControl(), "标签");
         }
 
         private void PackClearExecute()

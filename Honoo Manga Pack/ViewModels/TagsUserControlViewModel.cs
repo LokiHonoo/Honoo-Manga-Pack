@@ -13,9 +13,9 @@ namespace Honoo.MangaPack.ViewModels
         public TagsUserControlViewModel()
         {
             this.AddTagCommand = new RelayCommand(AddTagExecute, () => { return !string.IsNullOrWhiteSpace(this.Tag); });
-            this.MoveUpTagCommand = new RelayCommand<string?>(MoveUpTagExecute);
-            this.MoveDownTagCommand = new RelayCommand<string?>(MoveDownExecute);
-            this.RemoveTagCommand = new RelayCommand<string?>(RemoveTagExecute);
+            this.MoveUpTagCommand = new RelayCommand<object?>(MoveUpTagExecute);
+            this.MoveDownTagCommand = new RelayCommand<object?>(MoveDownExecute);
+            this.RemoveTagCommand = new RelayCommand<object?>(RemoveTagExecute);
         }
 
         public ICommand AddTagCommand { get; set; }
@@ -43,11 +43,11 @@ namespace Honoo.MangaPack.ViewModels
             this.Tag = string.Empty;
         }
 
-        private void MoveDownExecute(string? tag)
+        private void MoveDownExecute(object? obj)
         {
             for (int i = 0; i < this.Settings.Tags.Count; i++)
             {
-                if (tag == this.Settings.Tags[i])
+                if ((obj is string tag) && tag == this.Settings.Tags[i])
                 {
                     if (i != this.Settings.Tags.Count - 1)
                     {
@@ -58,11 +58,11 @@ namespace Honoo.MangaPack.ViewModels
             }
         }
 
-        private void MoveUpTagExecute(string? tag)
+        private void MoveUpTagExecute(object? obj)
         {
             for (int i = 0; i < this.Settings.Tags.Count; i++)
             {
-                if (tag == this.Settings.Tags[i])
+                if ((obj is string tag) && tag == this.Settings.Tags[i])
                 {
                     if (i != 0)
                     {
@@ -73,11 +73,11 @@ namespace Honoo.MangaPack.ViewModels
             }
         }
 
-        private void RemoveTagExecute(string? tag)
+        private void RemoveTagExecute(object? obj)
         {
             for (int i = this.Settings.Tags.Count - 1; i >= 0; i--)
             {
-                if (tag == this.Settings.Tags[i])
+                if ((obj is string tag) && tag == this.Settings.Tags[i])
                 {
                     this.Settings.Tags.RemoveAt(i);
                 }

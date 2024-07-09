@@ -1,0 +1,81 @@
+﻿<hui:Window x:Class="Honoo.MangaPack.ADWindow"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:hui="https://github.com/lokihonoo/honooui.wpf"
+            xmlns:local="clr-namespace:Honoo.MangaPack"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:system="clr-namespace:System;assembly=mscorlib"
+            xmlns:vm="clr-namespace:Honoo.MangaPack.ViewModels"
+            Title="检索广告页"
+            Width="990"
+            Height="620"
+            ResizeMode="NoResize"
+            SystemButtons="Close"
+            WindowStartupLocation="CenterScreen"
+            mc:Ignorable="d">
+    <hui:Window.DataContext>
+        <vm:ADWindowViewModel />
+    </hui:Window.DataContext>
+    <hui:Window.CaptionBar>
+        <TextBlock Margin="14,0,0,0"
+                   VerticalAlignment="Center"
+                   DockPanel.Dock="Left"
+                   FontSize="14"
+                   FontWeight="Bold"
+                   Text="检索广告页"
+                   WindowChrome.IsHitTestVisibleInChrome="False" />
+    </hui:Window.CaptionBar>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <hui:TextBox Text="{Binding Directory, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+            <hui:TextBox.Header>
+                <Border Margin="5,5,0,5"
+                        VerticalAlignment="Stretch"
+                        Background="#FFCECECE"
+                        CornerRadius="5">
+                    <TextBlock Margin="5,2" Text="检索路径" />
+                </Border>
+            </hui:TextBox.Header>
+            <hui:TextBox.Footer>
+                <Button Margin="3,0" Command="{Binding OpenFileDialogCommand}" Style="{StaticResource ButtonTransparentStyle}">
+                    <Path Margin="5" Data="{StaticResource FolderOpenGeometry}" Style="{StaticResource PathIcon16Style}" />
+                </Button>
+            </hui:TextBox.Footer>
+        </hui:TextBox>
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*" />
+                <ColumnDefinition Width="5*" />
+            </Grid.ColumnDefinitions>
+            <ListView d:ItemsSource="{d:SampleData ItemCount=5}" />
+            <Border Grid.Column="1"
+                    Margin="10"
+                    BorderBrush="DarkGray"
+                    BorderThickness="1">
+                <Border.Background>
+                    <ImageBrush ImageSource="/Resources/NoADFile.png" Stretch="UniformToFill" TileMode="None" />
+                </Border.Background>
+                <Grid>
+                    <Image Source="{Binding ADImage, Mode=OneWay}" />
+                    <TextBlock Margin="14"
+                               d:Text="FFFFFFFF"
+                               FontSize="18"
+                               FontStyle="Oblique"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               Text="{Binding Checksum, Mode=OneWay}" />
+                    <TextBlock Margin="12"
+                               d:Text="FFFFFFFF"
+                               FontSize="18"
+                               FontStyle="Oblique"
+                               FontWeight="Bold"
+                               Text="{Binding Checksum, Mode=OneWay}" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</hui:Window>
