@@ -32,4 +32,10 @@
     <Resource Include="Resources\yoriko18.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="UserControls\ADsUserControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

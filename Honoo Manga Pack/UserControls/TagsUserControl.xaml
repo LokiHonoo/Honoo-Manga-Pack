@@ -45,7 +45,7 @@
                         <TextBlock Text="{Binding}" />
                         <Button Grid.Column="1"
                                 Margin="10,0,0,0"
-                                Command="{Binding Path=DataContext.(vm:TagsUserControlViewModel.MoveUpTagCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                Command="{Binding Path=DataContext.(vm:TagsUserControlViewModel.MoveUpTagCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}"
                                 CommandParameter="{Binding}">
                             <Button.Style>
                                 <Style BasedOn="{StaticResource ButtonTransparentStyle}" TargetType="{x:Type Button}">
@@ -61,7 +61,7 @@
                         </Button>
                         <Button Grid.Column="2"
                                 Margin="10,0,0,0"
-                                Command="{Binding Path=DataContext.(vm:TagsUserControlViewModel.MoveDownTagCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                Command="{Binding Path=DataContext.(vm:TagsUserControlViewModel.MoveDownTagCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}"
                                 CommandParameter="{Binding}">
                             <Button.Style>
                                 <Style BasedOn="{StaticResource ButtonTransparentStyle}" TargetType="{x:Type Button}">
@@ -77,7 +77,7 @@
                         </Button>
                         <Button Grid.Column="3"
                                 Margin="10,0,0,0"
-                                Command="{Binding Path=DataContext.(vm:TagsUserControlViewModel.RemoveTagCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                Command="{Binding Path=DataContext.(vm:TagsUserControlViewModel.RemoveTagCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}"
                                 CommandParameter="{Binding}">
                             <Button.Style>
                                 <Style BasedOn="{StaticResource ButtonTransparentStyle}" TargetType="{x:Type Button}">

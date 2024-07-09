@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Honoo.MangaPack.UserControls.PasswordsUserControl"
+﻿<UserControl x:Class="Honoo.MangaPack.UserControls.ADsUserControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,33 +7,44 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:vm="clr-namespace:Honoo.MangaPack.ViewModels"
-             Width="270"
-             Height="320"
+             Width="400"
+             Height="370"
              d:Background="White"
              mc:Ignorable="d">
     <UserControl.DataContext>
-        <vm:PasswordsUserControlViewModel />
+        <vm:ADsUserControlViewModel />
     </UserControl.DataContext>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition />
             <RowDefinition Height="Auto" />
+            <RowDefinition />
         </Grid.RowDefinitions>
-        <hui:ActivatableTextBox ActivatableMode="KeyboardEnter" Command="{Binding AddPasswordCommand}" Text="{Binding Password, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
-            <hui:ActivatableTextBox.Header>
+        <hui:TextBox IsReadOnly="True">
+            <hui:TextBox.Header>
                 <Border Margin="5,5,0,5"
                         VerticalAlignment="Stretch"
                         Background="#FFCECECE"
                         CornerRadius="5">
-                    <TextBlock Margin="5,2" Text="新密码" />
+                    <TextBlock Margin="5,2" Text="文件名" />
                 </Border>
-            </hui:ActivatableTextBox.Header>
-        </hui:ActivatableTextBox>
-        <ListBox Grid.Row="1"
+            </hui:TextBox.Header>
+        </hui:TextBox>
+        <hui:TextBox Grid.Row="1" Margin="0,10,0,0" IsReadOnly="True">
+            <hui:TextBox.Header>
+                <Border Margin="5,5,0,5"
+                        VerticalAlignment="Stretch"
+                        Background="#FFCECECE"
+                        CornerRadius="5">
+                    <TextBlock Margin="5,2" Text="CRC32" />
+                </Border>
+            </hui:TextBox.Header>
+        </hui:TextBox>
+
+        <ListBox Grid.Row="2"
                  Margin="0,10,0,0"
                  d:ItemsSource="{d:SampleData ItemCount=5}"
-                 ItemsSource="{Binding Settings.Passwords}">
+                 ItemsSource="{Binding Settings.ADs}">
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="{x:Type system:Array}">
                     <Grid>
@@ -44,7 +55,7 @@
                         <TextBlock Text="{Binding [0]}" />
                         <Button Grid.Column="1"
                                 Margin="10,0,0,0"
-                                Command="{Binding Path=DataContext.(vm:PasswordsUserControlViewModel.RemovePasswordCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}"
+                                Command="{Binding Path=DataContext.(vm:ADsUserControlViewModel.RemoveADCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}"
                                 CommandParameter="{Binding [0]}">
                             <Button.Style>
                                 <Style BasedOn="{StaticResource ButtonTransparentStyle}" TargetType="{x:Type Button}">
