@@ -11,19 +11,18 @@ using System.Windows.Media.Imaging;
 
 namespace Honoo.MangaPack.ViewModels
 {
-    public sealed class ADEditUserControlViewModel : ObservableObject
+    public sealed class ADDialogUserControlViewModel : ObservableObject
     {
         private readonly string _adDirectly = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ads");
         private readonly Crc32 _crc = new();
         private readonly ADSettings _settings = ModelLocator.ADSettings;
         private string _ad = string.Empty;
         private string _adFile = string.Empty;
-        private string[]? _selectValue;
         private ImageSource? _adImage;
         private string _checksum = string.Empty;
-        public string Checksum { get => _checksum; set => SetProperty(ref _checksum, value); }
+        private string[]? _selectValue;
 
-        public ADEditUserControlViewModel()
+        public ADDialogUserControlViewModel()
         {
             this.OpenFileDialogCommand = new RelayCommand(OpenFileDialogExecute);
             this.AddADCommand = new RelayCommand(AddADExecute, () => { return !string.IsNullOrWhiteSpace(this.AD); });
@@ -40,6 +39,14 @@ namespace Honoo.MangaPack.ViewModels
             }
         }
 
+        public ICommand AddADCommand { get; set; }
+        public string ADFile { get => _adFile; set => SetProperty(ref _adFile, value); }
+        public ImageSource? ADImage { get => _adImage; set => SetProperty(ref _adImage, value); }
+        public string Checksum { get => _checksum; set => SetProperty(ref _checksum, value); }
+        public ICommand OpenFileDialogCommand { get; set; }
+
+        public ICommand RemoveADCommand { get; set; }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:属性不应返回数组", Justification = "<挂起>")]
         public string[]? SelectValue
         {
@@ -53,7 +60,6 @@ namespace Honoo.MangaPack.ViewModels
                     try
                     {
                         var img = new BitmapImage();
-
                         img.BeginInit();
                         img.StreamSource = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
                         img.EndInit();
@@ -70,16 +76,6 @@ namespace Honoo.MangaPack.ViewModels
                 }
             }
         }
-
-        public ImageSource? ADImage { get => _adImage; set => SetProperty(ref _adImage, value); }
-
-        public ICommand AddADCommand { get; set; }
-
-        public string ADFile { get => _adFile; set => SetProperty(ref _adFile, value); }
-
-        public ICommand OpenFileDialogCommand { get; set; }
-
-        public ICommand RemoveADCommand { get; set; }
 
         public ADSettings Settings => _settings;
 

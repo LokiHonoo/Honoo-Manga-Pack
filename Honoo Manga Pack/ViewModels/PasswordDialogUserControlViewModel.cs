@@ -7,12 +7,12 @@ using System.Windows.Input;
 
 namespace Honoo.MangaPack.ViewModels
 {
-    public sealed class PasswordEditUserControlViewModel : ObservableObject
+    public sealed class PasswordDialogUserControlViewModel : ObservableObject
     {
         private readonly PasswordSettings _settings = ModelLocator.PasswordSettings;
         private string _password = string.Empty;
 
-        public PasswordEditUserControlViewModel()
+        public PasswordDialogUserControlViewModel()
         {
             this.AddPasswordCommand = new RelayCommand(AddPasswordExecute, () => { return !string.IsNullOrWhiteSpace(this.Password); });
             this.RemovePasswordCommand = new RelayCommand<object?>(RemovePasswordExecute);

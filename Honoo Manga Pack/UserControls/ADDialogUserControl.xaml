@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Honoo.MangaPack.UserControls.ADEditUserControl"
+﻿<UserControl x:Class="Honoo.MangaPack.UserControls.ADDialogUserControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -10,9 +10,11 @@
              Width="400"
              Height="370"
              d:Background="White"
+             d:DesignHeight="370"
+             d:DesignWidth="400"
              mc:Ignorable="d">
     <UserControl.DataContext>
-        <vm:ADEditUserControlViewModel />
+        <vm:ADDialogUserControlViewModel />
     </UserControl.DataContext>
     <Grid>
         <Grid>
@@ -63,7 +65,7 @@
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <ListBox d:ItemsSource="{d:SampleData ItemCount=5}" ItemsSource="{Binding Settings.ADs}" SelectedValue="{Binding SelectValue, Mode=OneWayToSource}">
+                <ListBox ItemsSource="{Binding Settings.ADs}" SelectedValue="{Binding SelectValue, Mode=OneWayToSource}">
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type system:Array}">
                             <Grid>
@@ -74,7 +76,7 @@
                                 <TextBlock Text="{Binding [0]}" />
                                 <Button Grid.Column="1"
                                         Margin="10,0,0,0"
-                                        Command="{Binding Path=DataContext.(vm:ADEditUserControlViewModel.RemoveADCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}"
+                                        Command="{Binding Path=DataContext.(vm:ADDialogUserControlViewModel.RemoveADCommand), RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBox}}}"
                                         CommandParameter="{Binding [0]}">
                                     <Button.Style>
                                         <Style BasedOn="{StaticResource ButtonTransparentStyle}" TargetType="{x:Type Button}">

@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="UserControls\ADEditUserControl.xaml.cs">
+    <Compile Update="UserControls\ADDialogUserControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

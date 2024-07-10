@@ -41,7 +41,7 @@
                 </Border>
             </hui:TextBox.Header>
             <hui:TextBox.Footer>
-                <Button Margin="3,0" Command="{Binding OpenFileDialogCommand}" Style="{StaticResource ButtonTransparentStyle}">
+                <Button Margin="3,0" Command="{Binding OpenFloderDialogCommand}" Style="{StaticResource ButtonTransparentStyle}">
                     <Path Margin="5" Data="{StaticResource FolderOpenGeometry}" Style="{StaticResource PathIcon16Style}" />
                 </Button>
             </hui:TextBox.Footer>

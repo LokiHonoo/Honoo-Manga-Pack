@@ -6,12 +6,12 @@ using System.Windows.Input;
 
 namespace Honoo.MangaPack.ViewModels
 {
-    public sealed class TagEditUserControlViewModel : ObservableObject
+    public sealed class TagDialogUserControlViewModel : ObservableObject
     {
         private readonly TagSettings _settings = ModelLocator.TagSettings;
         private string _tag = string.Empty;
 
-        public TagEditUserControlViewModel()
+        public TagDialogUserControlViewModel()
         {
             this.AddTagCommand = new RelayCommand(AddTagExecute, () => { return !string.IsNullOrWhiteSpace(this.Tag); });
             this.MoveUpTagCommand = new RelayCommand<object?>(MoveUpTagExecute);

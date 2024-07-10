@@ -345,7 +345,7 @@
                                 </Grid.ColumnDefinitions>
                                 <CheckBox HorizontalAlignment="Left"
                                           Content="移除广告页"
-                                          IsChecked="{Binding MainSettings.RemoveAD, Mode=TwoWay}"
+                                          IsChecked="{Binding MainSettings.DeleteAD, Mode=TwoWay}"
                                           IsEnabled="False" />
                                 <Border Grid.Column="1"
                                         Margin="10,0,0,0"
@@ -384,6 +384,6 @@
                 </Grid>
             </Expander>
         </Grid>
-        <hui:DialogHost Margin="-5" />
+        <hui:DialogHost x:Name="MainDialogHost" Margin="-5" />
     </Grid>
 </hui:Window>

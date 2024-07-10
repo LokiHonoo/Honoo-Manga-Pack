@@ -1,11 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Honoo.MangaPack.Models;
-using System.Globalization;
-using System.IO;
+using Microsoft.Win32;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace Honoo.MangaPack.ViewModels
 {
@@ -42,6 +39,11 @@ namespace Honoo.MangaPack.ViewModels
 
         private void OpenFloderDialogExecute()
         {
+            var openFolderDialog = new OpenFolderDialog();
+            if (openFolderDialog.ShowDialog() == true)
+            {
+                this.Directory = openFolderDialog.FolderName;
+            }
         }
     }
 }
