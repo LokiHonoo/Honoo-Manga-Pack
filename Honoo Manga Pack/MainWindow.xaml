@@ -384,6 +384,7 @@
                 </Grid>
             </Expander>
         </Grid>
-        <hui:DialogHost x:Name="MainDialogHost" Margin="-5" />
+        <hui:DialogHost x:Name="MainDialogHost" Margin="0,0,0,-2" />
+        <hui:DialogHost x:Name="SubDialogHost" Margin="0,0,0,-2" />
     </Grid>
 </hui:Window>

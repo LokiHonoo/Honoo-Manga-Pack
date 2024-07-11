@@ -15,12 +15,19 @@ namespace Honoo.MangaPack.ViewModels
         public PasswordDialogUserControlViewModel()
         {
             this.AddPasswordCommand = new RelayCommand(AddPasswordExecute, () => { return !string.IsNullOrWhiteSpace(this.Password); });
-            this.RemovePasswordCommand = new RelayCommand<object?>(RemovePasswordExecute);
+            this.RemovePasswordCommand = new RelayCommand<string?>(RemovePasswordExecute);
         }
 
         public ICommand AddPasswordCommand { get; set; }
 
-        public string Password { get => _password; set => SetProperty(ref _password, value); }
+        public string Password
+        {
+            get => _password; set
+            {
+                SetProperty(ref _password, value);
+                ((IRelayCommand)this.AddPasswordCommand).NotifyCanExecuteChanged();
+            }
+        }
 
         public ICommand RemovePasswordCommand { get; set; }
 
@@ -44,25 +51,22 @@ namespace Honoo.MangaPack.ViewModels
             this.Password = string.Empty;
         }
 
-        private void RemovePasswordExecute(object? obj)
+        private void RemovePasswordExecute(string? password)
         {
-            if (obj is string password)
+            DialogOptions dialogOptions = new DialogOptions() { Buttons = DialogButtons.YesNo, Image = DialogImage.Information };
+            DialogManager.GetDialogHost("SubDialogHost").Show($"删除 \"{password}\"？", string.Empty, dialogOptions, (e) =>
             {
-                DialogOptions dialogOptions = new DialogOptions() { Buttons = DialogButtons.YesNo, Image = DialogImage.Information };
-                DialogManager.GetDialogAgent("PassordDialogHost").Show($"删除 \"{password}\"？", string.Empty, dialogOptions, (e) =>
+                if (e.DialogResult == DialogResult.Yes)
                 {
-                    if (e.DialogResult == DialogResult.Yes)
+                    for (int i = this.Settings.Passwords.Count - 1; i >= 0; i--)
                     {
-                        for (int i = this.Settings.Passwords.Count - 1; i >= 0; i--)
+                        if (password == this.Settings.Passwords[i][0])
                         {
-                            if (password == this.Settings.Passwords[i][0])
-                            {
-                                this.Settings.Passwords.RemoveAt(i);
-                            }
+                            this.Settings.Passwords.RemoveAt(i);
                         }
                     }
-                }, null);
-            }
+                }
+            }, null);
         }
     }
 }

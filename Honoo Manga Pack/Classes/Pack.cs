@@ -73,7 +73,19 @@ namespace Honoo.MangaPack.Classes
                             {
                                 key = $"{title}{key}";
                             }
-                            archive.AddEntry(key, file);
+                            using (FileStream fs = new FileStream(file, FileMode.Open))
+                            {
+                                var entry = archive.AddEntry(key, fs);
+                                if (settings.DeltetAD)
+                                {
+                                    string crc = Convert.ToString(entry.Crc, 16);
+                                    if (settings.ADs.Contains(crc))
+                                    {
+                                        archive.RemoveEntry(entry);
+                                        break;
+                                    }
+                                }
+                            }
                         }
                         archive.SaveTo(zip, _writerOptions);
                     }

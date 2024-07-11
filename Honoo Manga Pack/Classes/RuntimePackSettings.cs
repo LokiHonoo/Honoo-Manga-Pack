@@ -10,7 +10,7 @@ namespace Honoo.MangaPack.Classes
             this.WorkDirectly = Path.Combine(ModelLocator.MainSettings.WorkDirectly, "Packs");
             this.ResetName = ModelLocator.MainSettings.ResetName;
             this.MoveToRecycleBin = ModelLocator.MainSettings.MoveToRecycleBin;
-            this.RemoveAD = ModelLocator.MainSettings.DeleteAD;
+            this.DeltetAD = ModelLocator.MainSettings.DeleteAD;
             this.ADs = [];
             foreach (var ad in ModelLocator.ADSettings.ADs)
             {
@@ -23,10 +23,10 @@ namespace Honoo.MangaPack.Classes
 
         internal bool AddTag { get; }
         internal bool AddTopTitle { get; }
-        internal ICollection<string> ADs { get; }
+        internal HashSet<string> ADs { get; }
+        internal bool DeltetAD { get; }
         internal bool ExecuteAtDrop { get; }
         internal bool MoveToRecycleBin { get; }
-        internal bool RemoveAD { get; }
         internal bool ResetName { get; }
         internal string SelectedTag { get; }
 

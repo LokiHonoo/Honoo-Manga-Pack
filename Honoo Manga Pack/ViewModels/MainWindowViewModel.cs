@@ -232,7 +232,7 @@ namespace Honoo.MangaPack.ViewModels
                     this.UnpackWorkbench.IsRunning = true;
                     this.UnpackWorkbench.Log.Clear();
                     this.UnpackWorkbench.HasError = false;
-                    bool move = _mainSettings.UnpacksMoveToPacks && !this.PackWorkbench.IsRunning && this.PackWorkbench.Projects.Count == 0;
+                    bool move = this.MainSettings.UnpacksMoveToPacks && !this.PackWorkbench.IsRunning && this.PackWorkbench.Projects.Count == 0;
                     Task.Run(() =>
                     {
                         RuntimeUnpackSettings settings = new();
@@ -254,7 +254,7 @@ namespace Honoo.MangaPack.ViewModels
                         }
                         this.UnpackWorkbench.IsRunning = false;
                         //
-                        if (move && _mainSettings.PackUnpacks && this.PackWorkbench.Projects.Count > 0)
+                        if (move && this.MainSettings.PackUnpacks && this.PackWorkbench.Projects.Count > 0)
                         {
                             PackExecute();
                         }

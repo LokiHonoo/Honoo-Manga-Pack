@@ -11,6 +11,7 @@
     <AnalysisLevel>latest-all</AnalysisLevel>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <ApplicationIcon>Resources\yoriko18.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,11 +23,14 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Honoo.Configuration.ConfigurationManager" Version="1.4.11" />
-    <PackageReference Include="Honoo.IO.Hashing.Crc" Version="1.0.12" />
-    <PackageReference Include="HonooUI.WPF" Version="1.0.0-alpha.2" />
+    <PackageReference Include="Honoo.IO.Hashing.Crc" Version="1.0.14" />
     <PackageReference Include="itext" Version="8.0.4" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.122" />
     <PackageReference Include="SharpCompress" Version="0.37.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\HonooUI.WPF\HonooUI.WPF.Private\HonooUI.WPF\HonooUI.WPF.csproj" />
   </ItemGroup>
 
   <ItemGroup>

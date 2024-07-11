@@ -26,7 +26,7 @@ namespace Honoo.MangaPack.ViewModels
         {
             this.OpenFileDialogCommand = new RelayCommand(OpenFileDialogExecute);
             this.AddADCommand = new RelayCommand(AddADExecute, () => { return !string.IsNullOrWhiteSpace(this.AD); });
-            this.RemoveADCommand = new RelayCommand<object?>(RemoveADExecute);
+            this.RemoveADCommand = new RelayCommand<string?>(RemoveADExecute);
         }
 
         public string AD
@@ -124,7 +124,7 @@ namespace Honoo.MangaPack.ViewModels
                             break;
                         }
                     }
-                    this.AD = _crc.ComputeFinal().ToUpperInvariant();
+                    this.AD = _crc.ComputeFinal(StringFormat.Hex).ToUpperInvariant();
                 }
                 try
                 {
@@ -145,30 +145,27 @@ namespace Honoo.MangaPack.ViewModels
             }
         }
 
-        private void RemoveADExecute(object? obj)
+        private void RemoveADExecute(string? ad)
         {
-            if (obj is string ad)
+            DialogOptions dialogOptions = new DialogOptions() { Buttons = DialogButtons.YesNo, Image = DialogImage.Information };
+            DialogManager.GetDialogHost("SubDialogHost").Show($"删除 \"{ad}\"？", string.Empty, dialogOptions, (e) =>
             {
-                DialogOptions dialogOptions = new DialogOptions() { Buttons = DialogButtons.YesNo, Image = DialogImage.Information };
-                DialogManager.GetDialogAgent("ADDialogHost").Show($"删除 \"{ad}\"？", string.Empty, dialogOptions, (e) =>
+                if (e.DialogResult == DialogResult.Yes)
                 {
-                    if (e.DialogResult == DialogResult.Yes)
+                    for (int i = this.Settings.ADs.Count - 1; i >= 0; i--)
                     {
-                        for (int i = this.Settings.ADs.Count - 1; i >= 0; i--)
+                        if (ad == this.Settings.ADs[i][0])
                         {
-                            if (ad == this.Settings.ADs[i][0])
+                            string file = this.Settings.ADs[i][1];
+                            if (File.Exists(file))
                             {
-                                string file = this.Settings.ADs[i][1];
-                                if (File.Exists(file))
-                                {
-                                    File.Delete(file);
-                                }
-                                this.Settings.ADs.RemoveAt(i);
+                                File.Delete(file);
                             }
+                            this.Settings.ADs.RemoveAt(i);
                         }
                     }
-                }, null);
-            }
+                }
+            }, null);
         }
     }
 }

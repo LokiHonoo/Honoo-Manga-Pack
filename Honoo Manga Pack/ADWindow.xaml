@@ -31,7 +31,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <hui:TextBox Text="{Binding Directory, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+        <hui:TextBox Text="{Binding Floder, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
             <hui:TextBox.Header>
                 <Border Margin="5,5,0,5"
                         VerticalAlignment="Stretch"
@@ -41,9 +41,15 @@
                 </Border>
             </hui:TextBox.Header>
             <hui:TextBox.Footer>
-                <Button Margin="3,0" Command="{Binding OpenFloderDialogCommand}" Style="{StaticResource ButtonTransparentStyle}">
-                    <Path Margin="5" Data="{StaticResource FolderOpenGeometry}" Style="{StaticResource PathIcon16Style}" />
-                </Button>
+                <StackPanel Orientation="Horizontal">
+                    <Button Margin="3,0" Command="{Binding OpenFloderDialogCommand}" Style="{StaticResource ButtonTransparentStyle}">
+                        <Path Margin="5" Data="{StaticResource FolderOpenGeometry}" Style="{StaticResource PathIcon16Style}" />
+                    </Button>
+                    <Button Margin="3,0" Command="{Binding OpenFloderDialogCommand}" Style="{StaticResource ButtonTransparentStyle}">
+                        <Path Margin="5" Data="{StaticResource ArrowRightCircleGeometry}" Style="{StaticResource PathIcon16Style}" />
+                    </Button>
+                </StackPanel>
+
             </hui:TextBox.Footer>
         </hui:TextBox>
         <Grid Grid.Row="1" Margin="0,10,0,0">

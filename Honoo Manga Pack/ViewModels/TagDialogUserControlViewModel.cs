@@ -14,9 +14,9 @@ namespace Honoo.MangaPack.ViewModels
         public TagDialogUserControlViewModel()
         {
             this.AddTagCommand = new RelayCommand(AddTagExecute, () => { return !string.IsNullOrWhiteSpace(this.Tag); });
-            this.MoveUpTagCommand = new RelayCommand<object?>(MoveUpTagExecute);
-            this.MoveDownTagCommand = new RelayCommand<object?>(MoveDownExecute);
-            this.RemoveTagCommand = new RelayCommand<object?>(RemoveTagExecute);
+            this.MoveUpTagCommand = new RelayCommand<string?>(MoveUpTagExecute);
+            this.MoveDownTagCommand = new RelayCommand<string?>(MoveDownExecute);
+            this.RemoveTagCommand = new RelayCommand<string?>(RemoveTagExecute);
         }
 
         public ICommand AddTagCommand { get; set; }
@@ -29,7 +29,14 @@ namespace Honoo.MangaPack.ViewModels
 
         public TagSettings Settings => _settings;
 
-        public string Tag { get => _tag; set => SetProperty(ref _tag, value); }
+        public string Tag
+        {
+            get => _tag; set
+            {
+                SetProperty(ref _tag, value);
+                ((IRelayCommand)this.AddTagCommand).NotifyCanExecuteChanged();
+            }
+        }
 
         private void AddTagExecute()
         {
@@ -44,61 +51,52 @@ namespace Honoo.MangaPack.ViewModels
             this.Tag = string.Empty;
         }
 
-        private void MoveDownExecute(object? obj)
+        private void MoveDownExecute(string? tag)
         {
-            if (obj is string tag)
+            for (int i = 0; i < this.Settings.Tags.Count; i++)
             {
-                for (int i = 0; i < this.Settings.Tags.Count; i++)
+                if (tag == this.Settings.Tags[i])
                 {
-                    if (tag == this.Settings.Tags[i])
+                    if (i != this.Settings.Tags.Count - 1)
                     {
-                        if (i != this.Settings.Tags.Count - 1)
-                        {
-                            this.Settings.Tags.Move(i, i + 1);
-                            return;
-                        }
+                        this.Settings.Tags.Move(i, i + 1);
+                        return;
                     }
                 }
             }
         }
 
-        private void MoveUpTagExecute(object? obj)
+        private void MoveUpTagExecute(string? tag)
         {
-            if (obj is string tag)
+            for (int i = 0; i < this.Settings.Tags.Count; i++)
             {
-                for (int i = 0; i < this.Settings.Tags.Count; i++)
+                if (tag == this.Settings.Tags[i])
                 {
-                    if (tag == this.Settings.Tags[i])
+                    if (i != 0)
                     {
-                        if (i != 0)
-                        {
-                            this.Settings.Tags.Move(i, i - 1);
-                            return;
-                        }
+                        this.Settings.Tags.Move(i, i - 1);
+                        return;
                     }
                 }
             }
         }
 
-        private void RemoveTagExecute(object? obj)
+        private void RemoveTagExecute(string? tag)
         {
-            if (obj is string tag)
+            DialogOptions dialogOptions = new DialogOptions() { Buttons = DialogButtons.YesNo, Image = DialogImage.Information };
+            DialogManager.GetDialogHost("SubDialogHost").Show($"删除 \"{tag}\"？", string.Empty, dialogOptions, (e) =>
             {
-                DialogOptions dialogOptions = new DialogOptions() { Buttons = DialogButtons.YesNo, Image = DialogImage.Information };
-                DialogManager.GetDialogAgent("TagDialogHost").Show($"删除 \"{tag}\"？", string.Empty, dialogOptions, (e) =>
+                if (e.DialogResult == DialogResult.Yes)
                 {
-                    if (e.DialogResult == DialogResult.Yes)
+                    for (int i = this.Settings.Tags.Count - 1; i >= 0; i--)
                     {
-                        for (int i = this.Settings.Tags.Count - 1; i >= 0; i--)
+                        if (tag == this.Settings.Tags[i])
                         {
-                            if (tag == this.Settings.Tags[i])
-                            {
-                                this.Settings.Tags.RemoveAt(i);
-                            }
+                            this.Settings.Tags.RemoveAt(i);
                         }
                     }
-                }, null);
-            }
+                }
+            }, null);
         }
     }
 }
